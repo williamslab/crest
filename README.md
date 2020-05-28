@@ -5,25 +5,44 @@ Classification of RelationShip Types
 CREST (**C**lassification of **R**elation**S**hip **T**ypes) is a tool that uses identity-by-descent (IBD) segments to classify second-degree relatives as avuncular, half-siblings, or grandparent/grandchild.
 
 ## Quick Start
-Extract IBD information from your data with the program of your choice. 
-We recommend using [IBIS](https://github.com/williamslab/ibis).
+Follow these steps to get CREST results quickly and easily. All file names and directories in brackets should be replaced with names and directories of your choosing.
+### Your Data
+CREST, and IBIS, if you choose to use it, require genotype data in a PLINK binary file format. Note that CREST currently uses autosomal IBD only, so if you have non-autosomal data, be sure to exclude it later on.
+### Getting IBD Segments
+We recommend using [IBIS](https://github.com/williamslab/ibis) to extract IBD information. 
 Before running IBIS, we advise adding a genetic map to your .bim file. See the IBIS documentation [here](https://github.com/williamslab/ibis#Steps-for-running-IBIS):
-
-> `./add-map-plink.pl my.bim [map directory]/genetic_map_GRCh37_chr{1..22}.txt > new.bim`
+```
+./add-map-plink.pl [your data].bim [map directory]/genetic_map_GRCh37_chr{1..22}.txt > [your new data].bim
+```
 
 Then run IBIS itself:
 ```
-ibis your_data.bed your_data.bim your_data.fam -f IBIS_your_data
+ibis [your data].bed [your new data].bim [your data].fam -f [your IBIS data]
 ```
-or
+or if you rename the new .bim, you can supply all three at once:
 ```
-ibis -b your_data -f IBIS_your_data
+ibis -b [your data] -f [your IBIS data]
 ```
+
+...
+
+
 For sex-inference, you will need to convert sex-specific genetic maps of your choosing to a .simmap format file.
-Information on how to do this can be found [here](https://github.com/williamslab/ped-sim#map-file).
-Run sex-inference
+Information on how to do this can be found [here](https://github.com/williamslab/ped-sim#map-file):
 ```
-python3 CREST_sex_inference.py -i IBIS_your_data.seg -m your_genetic_map.simmap -b your_data.bim -o sex_inference_output
+bash
+wget https://github.com/cbherer/Bherer_etal_SexualDimorphismRecombination/raw/master/Refined_genetic_map_b37.tar.gz
+tar xvzf Refined_genetic_map_b37.tar.gz
+printf "#chr\tpos\tmale_cM\tfemale_cM\n" > refined_mf.simmap
+for chr in {1..22}; do
+  paste Refined_genetic_map_b37/male_chr$chr.txt Refined_genetic_map_b37/female_chr$chr.txt \
+    | awk -v OFS="\t" 'NR > 1 && $2 == $6 {print $1,$2,$4,$8}' \
+    | sed 's/^chr//' >> [your map].simmap;
+done
+```
+Now you are ready to run the sex-inference script:
+```
+python3 CREST_sex_inference.py -i IBIS_your_data.seg -m [your map].simmap -b your_[new_]data.bim -o sex_inference_output
 ```
 ## Thorough Start
 ### Pre-CREST Data Generation and Curation
