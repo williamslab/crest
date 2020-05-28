@@ -26,8 +26,6 @@ parser.add_argument('-b', '--bim', dest = 'bfile', metavar = 'bim_file',
 
 parser.add_argument('-w', '--window', metavar = 'window_size', 
     type = int, default = 500, help = 'Window size in kilobases. Default: 500 kb')
-parser.add_argument('-n', '--normalize', action = 'store_true', 
-    help = 'Normalize the length of the male genetic map to match the female. Default: False.')
 parser.add_argument('-k', '--keep', dest = 'keepfile', metavar = 'keep_file_name', 
     default = None, help = 'Name of the file containing samples to keep. If not provided, all samples are kept.')
 
@@ -41,25 +39,6 @@ keep_file = args.keepfile
 
 # multiply by 1000 bp / kb * 0.5
 window_size = args.window * 500
-boolean_normalize = False
-if args.normalize:
-  boolean_normalize = True
-
-
-
-###################################
-# Python 2/3 compatibility features
-###################################
-
-# redefine the range/xrange function as needed
-# also redefine string dtype notation
-import sys
-if sys.version_info >= (3, 0):
-  irange = range
-  S = 'U64'
-else:
-  irange = xrange
-  S = 'S64'
 
 
 
@@ -119,16 +98,15 @@ def read_input(file_name, keep = None):
           f.append(tuple(l_modified))
       
   # create the structured array with appropriate fields
-  f_in = np.array(f, dtype=[('id1', S), ('id2', S), ('chr', S), ('start', 'i8'), ('stop', 'i8')])
+  f_in = np.array(f, dtype=[('id1', 'U64'), ('id2', 'U64'), ('chr', 'U64'), ('start', 'i8'), ('stop', 'i8')])
 
   return f_in
 
 
 
-def read_simmap(file_name, boolean_normalize):
+def read_simmap(file_name):
   '''
   Read in a .simmap file as a dictionary of structured arrays with fields: ('chrom', 'pos', 'male (cM)', 'female (cM)')
-  If boolean_normalize is True, normalize the male map to the female length
   '''
   f = []
   with open(file_name) as file:
@@ -143,17 +121,12 @@ def read_simmap(file_name, boolean_normalize):
       f.append(tuple(l))
       
   # create the structured array with appropriate fields
-  f_in = np.array(f, dtype = [('chrom', S), ('pos', 'i8'), ('male', 'f8'), ('female', 'f8')])
+  f_in = np.array(f, dtype = [('chrom', 'U64'), ('pos', 'i8'), ('male', 'f8'), ('female', 'f8')])
 
   # split the simmap into chromosome maps
   D = dict()
   for chrom in np.unique(f_in['chrom']):
     D[chrom] = f_in[f_in['chrom'] == chrom]
-
-    # normalize the male map length
-    if boolean_normalize:
-      normalizing_ratio = np.amax(D[chrom]['female']) / np.amax(D[chrom]['male'])
-      D[chrom]['male'] *= normalizing_ratio
 
   return D
 
@@ -188,7 +161,7 @@ def compute_bim_ends(file_name):
 
     f.append(tuple(old_line))
 
-  f_in = np.array(f, dtype = [('chrom', S), ('snp', S), ('morgan', 'f8'), ('pos', 'i8'), ('allele1', S), ('allele2', S)])
+  f_in = np.array(f, dtype = [('chrom', 'U64'), ('snp', 'U64'), ('morgan', 'f8'), ('pos', 'i8'), ('allele1', 'U64'), ('allele2', 'U64')])
   
   D = dict()
   for chrom in np.unique(f_in['chrom']):
@@ -245,7 +218,7 @@ def log_factorial(n):
   if n == 0 or n == 1:
     return fact_n
 
-  for i in irange(1, n + 1):
+  for i in range(1, n + 1):
     fact_n += np.log10(i)
   return fact_n
 
@@ -600,11 +573,11 @@ def write_output(input_struct, file_name, bim, simmap):
   pairs_uniq = np.unique(input_struct[['id1', 'id2']])
   pairs_dict = dict()
   
-  for x in irange(len(pairs_uniq)):
+  for x in range(len(pairs_uniq)):
     pair = tuple(pairs_uniq[x])
     pairs_dict[pair] = []
   
-  for y in irange(len(input_struct)):
+  for y in range(len(input_struct)):
     pair = tuple(input_struct[['id1', 'id2']][y])
     data = input_struct[['chr', 'start', 'stop']][y]
     pairs_dict[pair].append(data)
@@ -631,7 +604,7 @@ def main():
   t0 = time.time()
   in_file = read_input(input_file, keep_file)
   bim_ends = compute_bim_ends(bim)
-  simmap = read_simmap(map_file, boolean_normalize)
+  simmap = read_simmap(map_file)
   write_output(in_file, output_file, bim_ends, simmap)
   t1 = time.time()
   print('Total run-time is:', t1 - t0)
