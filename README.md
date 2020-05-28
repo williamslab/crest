@@ -42,7 +42,7 @@ done
 ```
 Now you are ready to run the sex-inference script:
 ```
-python3 CREST_sex_inference.py -i IBIS_your_data.seg -m [your map].simmap -b your_[new_]data.bim -o sex_inference_output
+CREST_sex_inference.py -i IBIS_your_data.seg -m [your map].simmap -b your_[new_]data.bim -o sex_inference_output
 ```
 ## Thorough Start
 ### Pre-CREST Data Generation and Curation
