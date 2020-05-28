@@ -8,12 +8,10 @@ CREST (**C**lassification of **R**elation**S**hip **T**ypes) is a tool that uses
 Extract IBD information from your data with the program of your choice. 
 We recommend using [IBIS](https://github.com/williamslab/ibis).
 Before running IBIS, we advise adding a genetic map to your .bim file. See the IBIS documentation [here](https://github.com/williamslab/ibis#Steps-for-running-IBIS):
->>>
-~~~
-./add-map-plink.pl my.bim [map directory]/genetic_map_GRCh37_chr{1..22}.txt > new.bim
-~~~
->>>
 
+> `./add-map-plink.pl my.bim [map directory]/genetic_map_GRCh37_chr{1..22}.txt > new.bim`
+
+Then run IBIS itself:
 ```
 ibis your_data.bed your_data.bim your_data.fam -f IBIS_your_data
 ```
