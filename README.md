@@ -7,7 +7,11 @@ CREST (**C**lassification of **R**elation**S**hip **T**ypes) is a tool that uses
 ## Quick Start
 Extract IBD information from your data with the program of your choice. We recommend using [IBIS](https://github.com/williamslab/ibis).
 ```
-ibis your_data.bed your_data.bim your_data.fam -min_l 7 -mt 500 -er 0.04 -f IBIS_your_data
+ibis your_data.bed your_data.bim your_data.fam -f IBIS_your_data
+```
+or
+```
+ibis -b your_data -f IBIS_your_data
 ```
 ...
 
