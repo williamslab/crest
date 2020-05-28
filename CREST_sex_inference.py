@@ -587,6 +587,9 @@ def write_output(input_struct, file_name, bim, simmap):
   
   # write output
   with open(file_name, 'w') as file:
+    # write a header
+    HEADER = ['id1', 'id2', 'segment_number', 'GP_lod', 'HS_lod']
+    file.write('\t'.join(HEADER) + '\n')
     for pair in out:
       line_to_write = list(pair)
       data_to_add = [str(i) for i in out[pair].tolist()]
