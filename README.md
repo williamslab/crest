@@ -67,6 +67,6 @@ CREST_sex_inference.py -i [your IBIS data].seg -m [your map].simmap -b [your (ne
 #### Output file format
 The format of the output file is
 ```
-id1 id2 number_of_segments LOD_if_GP LOD_if_HS
+id1 id2 segment_number GP_lod HS_lod
 ```
 The last two columns are quasi-LOD scores under the HS and GP models, where LOD = log10 (p(maternal) / p(paternal)). In other words,  positive scores indicate a pair is more probably maternal, while negative scores indicate a pair is more probably paternal.
