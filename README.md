@@ -9,7 +9,7 @@ Follow these steps to get CREST results quickly and easily. All file names and d
 ### Your Data
 CREST, and IBIS, if you choose to use it, requires genotype data in a PLINK binary file format. Note that CREST currently uses autosomal IBD only, so if you have non-autosomal data, be sure to exclude it later on.
 ### Getting IBD Segments
-We recommend using [IBIS](https://github.com/williamslab/ibis) to extract IBD information. 
+We recommend using [IBIS](https://github.com/williamslab/ibis) to extract IBD information. It tends to infer contiguous segments, which is especially important for sex inference. 
 Before running IBIS, we advise adding a genetic map to your .bim file. See the IBIS documentation [here](https://github.com/williamslab/ibis#Steps-for-running-IBIS):
 ```
 ./add-map-plink.pl [your data].bim [map directory]/genetic_map_GRCh37_chr{1..22}.txt > [your new data].bim
@@ -50,36 +50,19 @@ CREST_sex_inference.py -i [your IBIS data].seg -m [your map].simmap -b [your (ne
 ### Parental Sex Inference
 #### Command line arguments:
 
-*  `-i` or `--input`
+* `-i` or `--input`: name of the input file (required)
 
-    * Name of the input file
-    * Required argument
+* `-o` or `--output`: name of the output file (required)
 
-* `-o` or `--output`
+* `-m` or `--map`: name of a genetic map in .simmap format (required)
 
-    * Name of the output file
-    * Required argument
+* `-b` or `--bim`: name of the .bim file from your IBD data (required)
 
-* `-m` or `--map`
+* `-w` or `--window`: window size in kilobases (optional, integer, defaults to 500 kb)
+    * Windows are symmetric about the IBD segment ends, so a 500 kb window extends 250 kb in both directions.
 
-    * Name of a genetic map in .simmap format
-    * Required argument
+* `-k` or `--keep`: list of sample pairs to keep for sex-inference analysis (optional, defaults to `None`)
 
-* `-b` or `--bim`
-
-    * Name of the original .bim file for your data
-    * Required argument
-
-* `-w` or `--window`
-
-    * Window size in kilobases
-    * Optional argument, defaults to 500 kb
-    * Must be an integer
-
-* `-k` or `--keep`
-
-    * List of pairs of samples to keep
-    * Optional argument, defaults to `None`
 
 #### Output file format
 The format of the output file is
