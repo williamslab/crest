@@ -5,7 +5,15 @@ Classification of RelationShip Types
 CREST (**C**lassification of **R**elation**S**hip **T**ypes) is a tool that uses identity-by-descent (IBD) segments to classify second-degree relatives as avuncular, half-siblings, or grandparent/grandchild.
 
 ## Quick Start
-Extract IBD information from your data with the program of your choice. We recommend using [IBIS](https://github.com/williamslab/ibis).
+Extract IBD information from your data with the program of your choice. 
+We recommend using [IBIS](https://github.com/williamslab/ibis).
+Before running IBIS, we advise adding a genetic map to your .bim file. See the IBIS documentation [here](https://github.com/williamslab/ibis#Steps-for-running-IBIS):
+>>>
+~~~
+./add-map-plink.pl my.bim [map directory]/genetic_map_GRCh37_chr{1..22}.txt > new.bim
+~~~
+>>>
+
 ```
 ibis your_data.bed your_data.bim your_data.fam -f IBIS_your_data
 ```
@@ -13,8 +21,8 @@ or
 ```
 ibis -b your_data -f IBIS_your_data
 ```
-...
-
+For sex-inference, you will need to convert sex-specific genetic maps of your choosing to a .simmap format file.
+Information on how to do this can be found [here](https://github.com/williamslab/ped-sim#map-file).
 Run sex-inference
 ```
 python3 CREST_sex_inference.py -i IBIS_your_data.seg -m your_genetic_map.simmap -b your_data.bim -o sex_inference_output
