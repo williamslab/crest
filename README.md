@@ -33,7 +33,7 @@ Information on how to do this can be found [here](https://github.com/williamslab
 bash
 wget https://github.com/cbherer/Bherer_etal_SexualDimorphismRecombination/raw/master/Refined_genetic_map_b37.tar.gz
 tar xvzf Refined_genetic_map_b37.tar.gz
-printf "#chr\tpos\tmale_cM\tfemale_cM\n" > refined_mf.simmap
+printf "#chr\tpos\tmale_cM\tfemale_cM\n" > [your map].simmap
 for chr in {1..22}; do
   paste Refined_genetic_map_b37/male_chr$chr.txt Refined_genetic_map_b37/female_chr$chr.txt \
     | awk -v OFS="\t" 'NR > 1 && $2 == $6 {print $1,$2,$4,$8}' \
@@ -42,7 +42,7 @@ done
 ```
 Now you are ready to run the sex-inference script:
 ```
-CREST_sex_inference.py -i IBIS_your_data.seg -m [your map].simmap -b your_[new_]data.bim -o sex_inference_output
+CREST_sex_inference.py -i [your IBIS data].seg -m [your map].simmap -b [your (new) data].bim -o [sex inference output]
 ```
 ## Thorough Start
 ### Pre-CREST Data Generation and Curation
