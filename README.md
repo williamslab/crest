@@ -7,7 +7,7 @@ CREST (**C**lassification of **R**elation**S**hip **T**ypes) is a tool that uses
 ## Quick Start
 Follow these steps to get CREST results quickly and easily. All file names and directories in brackets should be replaced with names and directories of your choosing.
 ### Your Data
-CREST, and IBIS, if you choose to use it, require genotype data in a PLINK binary file format. Note that CREST currently uses autosomal IBD only, so if you have non-autosomal data, be sure to exclude it later on.
+CREST, and IBIS, if you choose to use it, requires genotype data in a PLINK binary file format. Note that CREST currently uses autosomal IBD only, so if you have non-autosomal data, be sure to exclude it later on.
 ### Getting IBD Segments
 We recommend using [IBIS](https://github.com/williamslab/ibis) to extract IBD information. 
 Before running IBIS, we advise adding a genetic map to your .bim file. See the IBIS documentation [here](https://github.com/williamslab/ibis#Steps-for-running-IBIS):
