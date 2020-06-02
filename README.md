@@ -5,6 +5,7 @@ Classification of RelationShip Types
 CREST (**C**lassification of **R**elation**S**hip **T**ypes) is a tool that uses identity-by-descent (IBD) segments to classify second-degree relatives as avuncular, half-siblings, or grandparent/grandchild.
 
 ## Quick Start
+There are three parts of CREST for different functions. First, the CREST_ratios calculates ratios from IBD and provides features for CREST_pred.
 Follow these steps to get CREST results quickly and easily. All file names and directories in brackets should be replaced with names and directories of your choosing.
 ### Your Data
 CREST, and IBIS, if you choose to use it, requires genotype data in a PLINK binary file format. Note that CREST currently uses autosomal IBD only, so if you have non-autosomal data, be sure to exclude it later on.
