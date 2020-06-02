@@ -258,15 +258,13 @@ struct secondPair {
     double total=0;
     double max=0;
     vector<double> lenOfSeg;
-
-   
     vector<double> numRel;
     vector<double> numCluster;
     vector<double> coverage;
     vector<double> overlapLen1;
     vector<double> overlapLen2;
-    vector<double> overlapt1;
-    vector<double> overlapt2;
+    //vector<double> overlapt1;
+    //vector<double> overlapt2;
 
     bool operator==(const secondPair& other) { return id1 == other.id1 && id2 == other.id2; }
     
@@ -561,14 +559,8 @@ int main(int argc, char** argv) {
     }// end while read in second pairs list
 
    //************************************************************************
-    cout << "the number of second degree pairs" << endl;
-    cout << setOf2ndPair.size() << endl;
-    cout << "the number of samples" << endl;
-    cout << ID.size() << endl;
-    // read in other relatives between 3-6 degree and store them to sets for each individual in ID
+
     const int NUM1=ID.size();
-    //string relID;
-    //pairRelated rel_kinship;
     unordered_map<int,set<int>> relatives;
     map<string,int>::iterator it1;
     map<string,int>::iterator it2; 
@@ -665,9 +657,6 @@ int main(int argc, char** argv) {
     
     vector<secondPair>::iterator it;
     for(it = setOf2ndPair.begin(); it != setOf2ndPair.end(); ++it){
-        //secondPair& list=*it;
-        cout << ID[(*it).id1] << " and " << ID[(*it).id2] << endl;
-        cout << "The pair: " << ID_track[ID[(*it).id1]] << " and " << ID_track[ID[(*it).id2]] << endl;
         int i = ID[(*it).id1]-1;
         int j = ID[(*it).id2]-1;
         int ij;
@@ -695,13 +684,6 @@ int main(int argc, char** argv) {
         
         set_intersection(relatives[ID[(*it).id1]].begin(), relatives[ID[(*it).id1]].end(), relatives[ID[(*it).id2]].begin(), relatives[ID[(*it).id2]].end(), back_inserter(commonRelatives));
         
-        cout << " the number of relatives of " << ID_track[ID[(*it).id1]] << endl;
-        cout << relatives[ID[(*it).id1]].size() << endl;
-        cout << " the number of relatives of " << ID_track[ID[(*it).id2]] << endl;
-        cout << relatives[ID[(*it).id2]].size() << endl;
-        cout << " the number of common relatives " << endl;
-        cout << commonRelatives.size() << endl;  
-
         //******************************************************************************************************
         // cluster the relatives  
         vector<MutRelative> clusters;
@@ -709,11 +691,9 @@ int main(int argc, char** argv) {
         dataBlock ibd_rel;
         vector<MutRelative> relativeVec;
 
-    	cout << " total number of relatives: " << commonRelatives.size() << endl; 
         if (commonRelatives.size() !=0){
             for (vector<int>::iterator it1 = commonRelatives.begin(); it1!=commonRelatives.end(); ++it1){
                 int k = (*it1)-1;
-                cout << " the relative " << k+1 << endl;
              
                 MutRelative rel;
                 dataBlock x1y;
@@ -801,9 +781,7 @@ int main(int argc, char** argv) {
         double n = 0;
         double d1 = 0;
         double d2 = 0;
-        double cov = 0;
-            
-                    
+        double cov = 0;     
 
 //**********************************************************************************************
         if (clusters.size() !=0){
@@ -832,13 +810,8 @@ int main(int argc, char** argv) {
                         x1y = IBDsegment[i][k];
                         x2y = IBDsegment[j][k];
                     }
-                    cout << ID_track[k+1] << " ibd " << x1y.total << endl; 
-                    cout << ID_track[k+1] << " ibd " << x2y.total << endl;
                     if(x1y.segmentVec.size() != 0 && x2y.segmentVec.size() != 0 ){
-                        cout << " find a y " << k << ID_track[k+1] << endl;
-                        cout << " the ibd of x1y " << x1y.total << endl;
-                        cout << " the ibd of x2y " << x2y.total << endl;
-                    // cout << "the k in ID" << k << endl;
+
                         tmp = intersection(x1y,x2y);
                         tmp1 = combine(tmp,tmp1);
                         tmp_union1 = combine(x1y,tmp_union1);
@@ -855,23 +828,17 @@ int main(int argc, char** argv) {
 
         
         (*it).coverage.push_back(cov);
-
-        //(*it).overlapLen1.push_back(tmp1.total / tmp_union1.total);
-        //(*it).overlapLen2.push_back(tmp1.total / tmp_union2.total);
         (*it).overlapLen1.push_back(n / d1); 
         (*it).overlapLen2.push_back(n / d2); 
-        (*it).overlapt1.push_back(d1);
-        (*it).overlapt2.push_back(d2);
+        //(*it).overlapt1.push_back(d1);
+        //(*it).overlapt2.push_back(d2);
             
         }else{
             (*it).coverage.push_back(0);
-
-        //(*it).overlapLen1.push_back(tmp1.total / tmp_union1.total);
-        //(*it).overlapLen2.push_back(tmp1.total / tmp_union2.total);
-        (*it).overlapLen1.push_back(0); 
-        (*it).overlapLen2.push_back(0); 
-        (*it).overlapt1.push_back(0);
-        (*it).overlapt2.push_back(0);
+            (*it).overlapLen1.push_back(0); 
+            (*it).overlapLen2.push_back(0); 
+            //(*it).overlapt1.push_back(0);
+            //(*it).overlapt2.push_back(0);
         }// end if relatives not empty
         out << (*it);
     } // end for loop over 2nd degree pairs
