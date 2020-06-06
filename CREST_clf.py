@@ -1,4 +1,4 @@
-__author__ = 'qiaoqiao'
+#!/usr/bin/env python3
 import sys
 import os
 import numpy as np
@@ -184,38 +184,38 @@ if __name__ == '__main__':
     #                    type=str,
     #                    help='path for fblocka.')
     parser.add_argument('--train',
-                        help='To train new models with training data and labels.',
+                        help='To train new classifier with training data and labels.',
                         action="store_true")
     parser.add_argument('--start',
                         type=float, default = 0.025,
-                        help='The minimum coverage to consider.')
+                        help='The minimum coverage to classify.')
     parser.add_argument('--end',
                         type=float, default = 0.20,
                         help='The coverage to start to merge models.')
     parser.add_argument('--inv',
                         type=float,default = 0.025,
-                        help='The interval of coverage to train models.')
+                        help='The window size of coverage for each model.')
     parser.add_argument('--prior',
                         type=str, 
                         help='File to give prior probability.')
     parser.add_argument('-i', '--input',
                         type=str, required=True,
-                        help='Path for input data.')
+                        help='File with input data.')
     parser.add_argument('--models_type',
                         type=str, default = 'type_clf.pl',
-                        help='Path for trained models to predict relationship types.')
+                        help='File of trained models to predict relationship types.')
     parser.add_argument('--total_len',
                         type=float,default = 3346,
                         help='The total length of genome in cM.')
     parser.add_argument('--models_direction', 
                         type=str, default = 'direction_clf.pl',
-                        help='Path for trained models to predict directionality.')
+                        help='File of trained models to predict directionality.')
     parser.add_argument('-o','--output',
                         type=str, default = 'out.csv',
-                        help='Path for output results.')
+                        help='File to output results.')
     parser.add_argument('--labels',
                         type=str,
-                        help='File with labels for trainning data.')
+                        help='File of labels for trainning data.')
 
     args = parser.parse_args()
     main(args)
