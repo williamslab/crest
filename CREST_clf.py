@@ -57,11 +57,27 @@ class KDEClassifier(BaseEstimator, ClassifierMixin):
 
 
 def read_in_data(file, total_len):
-    id1, id2, c, r1,r2 = np.genfromtxt(file, delimiter=',', usecols=(0,1,2,3,4), unpack=True)
+    id1 = [ ]
+    id2 = [ ]
+    c = [ ]
+    r1 = [ ]
+    r2 = [ ]
+    with open (file) as file:
+        for lines in file:
+            line = lines.split(',')
+            id1.append(line[0])
+            id2.append(line[1])
+            c.append(float(line[2]))
+            r1.append(float(line[3]))
+            r2.append(float(line[4]))
+
+
+
+    #id1, id2, c, r1,r2 = np.genfromtxt(file, delimiter=',', usecols=(0,1,2,3,4), unpack=True)
     #np.genfromtxt(StringIO(data), usecols=(0, -1))
     f1 = [min(r1[i],r2[i]) for i in range(len(c))]
     f2 = [max(r1[i],r2[i]) for i in range(len(c))]
-    coverage = [c/total_len for i in range(len(c))]
+    coverage = [c[i]/(total_len*2) for i in range(len(c))]
     d = [np.log(r1[i])-np.log(r2[i]) if r1[i]*r2[i]!=0 else 0 for i in range(len(c))]
     features = np.column_stack((id1, id2, coverage, f1, f2, d))
     
@@ -82,10 +98,10 @@ def train_KDE_model(start, end, inv, features, labels, model_file, bandwidths):
     num_win = round((end - start)/inv)+1
     for index_win in range(num_win):
         if index_win < num_win - 1 :
-            index_bin = [i for i in range(total_num) if ~np.isnan(features[i,2]) and features[i,3] != 0 and start + index_win * inv <= features[i,2] <= start + (index_win + 1) * inv]
+            index_bin = [i for i in range(total_num) if ~np.isnan(float(features[i,2])) and float(features[i,3]) != 0 and start + index_win * inv <= float(features[i,2]) <= start + (index_win + 1) * inv]
               
         else:
-            index_bin = [i for i in range(total_num) if ~np.isnan(features[i,2]) and features[i,3]!=0 and features[i,2] >= start + index_win * inv ]
+            index_bin = [i for i in range(total_num) if ~np.isnan(float(features[i,2])) and float(features[i,3])!=0 and float(features[i,2]) >= start + index_win * inv ]
 
 
        # print(len(index))
@@ -96,9 +112,9 @@ def train_KDE_model(start, end, inv, features, labels, model_file, bandwidths):
             print("There is no enough data in this bin")
             continue
         if len(index_bin) == 1:
-            X_train = features[index_bin,3:5].reshape(-1,1)
+            X_train = features[index_bin,3:5].reshape(-1,1).astype(np.float)
         else:
-            X_train = features[index_bin,3:5]
+            X_train = features[index_bin,3:5].astype(np.float)
 
         #X_train[:,0] = np.divide(X_train[:,0],X_train[:,1])
         Y_train = labels[index_bin]
@@ -112,23 +128,26 @@ def train_KDE_model(start, end, inv, features, labels, model_file, bandwidths):
 def prediction_KDE(features, start, end, inv, class_models, direction_model,prior=0):
 
     total_num = features.shape[0]
-    results = numpy.empty(total_num, 9)
-    resutls[:,0:2] = features[:,0:2]
+    results = np.empty([total_num, 9], dtype=object)
+    results[:,0:2] = features[:,0:2]
     
     for i in range(total_num):
-        if ~np.isnan(features[i,2]) and float(features[i,2]) >= start:
+        if ~np.isnan(float(features[i,2])) and float(features[i,2]) >= start:
             coverage = float(features[i,2])
-            model_index = int((coverage-start)/inv)
-            X_pred = features[i,3:5].reshape(-1,1)
+            if coverage >= end:
+                model_index = int((end-start)/inv)
+            else:
+                model_index = int((coverage-start)/inv)
+            X_pred = features[i,3:5].astype(np.float).reshape(1,-1)
         #X_pred[:,0] = np.divide(X_pred[:,0],X_pred[:,1])
             y_pred = class_models[model_index].predict(X_pred)
             pred_prob = class_models[model_index].predict_proba(X_pred)
             
-            direction_pred = direction_model.predict(features[i,5].reshape(-1,1))
-            pred_prob1 = direction_model.predict_proba(features[i,5].reshape(-1,1))
-            results[i,2] = y_pred
+            direction_pred = direction_model.predict(features[i,5].reshape(1,-1))
+            pred_prob1 = direction_model.predict_proba(features[i,5].reshape(1,-1))
+            results[i,2] = y_pred[0]
             results[i,3:6] = pred_prob
-            results[i,6] = direction_pred
+            results[i,6] = direction_pred[0]
             results[i,7:9] = pred_prob1
 
         else: 
@@ -143,18 +162,18 @@ def prediction_KDE(features, start, end, inv, class_models, direction_model,prio
 
 
 def main(args):
-    features = read_in_data(args.input)
+    features = read_in_data(args.input,args.total_len)
     if args.train:
         #read in labels 
         with open(args.labels) as csvfile:
             labels = csv.reader(csvfile, delimiter=',')
         bandwidths = np.logspace(-2, -0.5, 30)
 
-    test_model = pickle.load(open(args.models, 'rb'))
-    direction_model = args.models_direction
+    test_model = pickle.load(open(args.models_type, 'rb'))
+    direction_model = pickle.load(open(args.models_direction, 'rb'))
 
-    results = prediction_KDE(features, start, end, inv, test_models, direction_model)
-    np.savetxt(args.output, results, delimiter=',')
+    results = prediction_KDE(features, args.start, args.end, args.inv, test_model, direction_model)
+    np.savetxt(args.output, results, delimiter=',',fmt='%s')
       
 
 if __name__ == '__main__':
@@ -171,7 +190,7 @@ if __name__ == '__main__':
                         type=float, default = 0.025,
                         help='The minimum coverage to consider.')
     parser.add_argument('--end',
-                        type=float, default = 0.2,
+                        type=float, default = 0.20,
                         help='The coverage to start to merge models.')
     parser.add_argument('--inv',
                         type=float,default = 0.025,
@@ -182,14 +201,17 @@ if __name__ == '__main__':
     parser.add_argument('-i', '--input',
                         type=str, required=True,
                         help='Path for input data.')
-    parser.add_argument('--models',
-                        type=str, required=True,
+    parser.add_argument('--models_type',
+                        type=str, default = 'type_clf.pl',
                         help='Path for trained models to predict relationship types.')
-    parser.add_argument('--models_direction',
-                        type=str,
+    parser.add_argument('--total_len',
+                        type=float,default = 3346,
+                        help='The total length of genome in cM.')
+    parser.add_argument('--models_direction', 
+                        type=str, default = 'direction_clf.pl',
                         help='Path for trained models to predict directionality.')
     parser.add_argument('-o','--output',
-                        type=str,
+                        type=str, default = 'out.csv',
                         help='Path for output results.')
     parser.add_argument('--labels',
                         type=str,
