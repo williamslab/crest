@@ -162,7 +162,7 @@ bool CmdLineOpts::parseCmdLineOptions(int argc, char **argv) {
   if (ibdFile == NULL || relFile == NULL || outPrefix == NULL) {
     if (haveGoodArgs)
       fprintf(stderr, "\n");
-    fprintf(stderr, "ERROR: ibd, relatives, and output prefix names required\n");
+    fprintf(stderr, "ERROR: ibd segments file, relatives list file, and output prefix names required\n");
     haveGoodArgs = false;
   }
   
@@ -182,13 +182,14 @@ void CmdLineOpts::printUsage(FILE *out, char *programName) {
   fprintf(out, "%s [ARGUMENTS]\n", programName);
   fprintf(out, "\n");
   fprintf(out, "REQUIRED ARGUMENTS:\n");
-  fprintf(out, "  -i <filename>\t\tibd file including all ibdsegments among samples\n");
-  fprintf(out, "  -r <filename>\t\trel file containing a list of relatives within samples\n");
+  fprintf(out, "  -i <filename>\t\tseg file including all ibdsegments among samples\n");
+  fprintf(out, "  -r <filename>\t\tcoef file containing a list of relatives within samples\n");
   fprintf(out, "  -o <prefix>\t\toutput prefix (creates <prefix>.csv.)\n");
   
   fprintf(out, "OPTIONS:\n");
   fprintf(out, "  --ibd2 <#>\tibd2 proportion to exclude some close relative types (default 0.02; 0 disables)\n");
   fprintf(out, "  --cluster_thres <#>\tthreshold in cM to cluster relatives \n");
+  fprintf(out, "  --max_degree <#>\tupper bound of degree of relatedness to consider as mutual relatives \n");
   fprintf(out, "\n");
 }
 
