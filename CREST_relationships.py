@@ -202,13 +202,13 @@ if __name__ == '__main__':
                         type=str, required=True,
                         help='File with input data.')
     parser.add_argument('--models_type',
-                        type=str, default = 'type_clf.pl',
+                        type=str, default = 'type_clf.pickle',
                         help='File of trained models to predict relationship types.')
     parser.add_argument('--total_len',
                         type=float,default = 3346,
                         help='The total length of genome in cM.')
     parser.add_argument('--models_direction', 
-                        type=str, default = 'direction_clf.pl',
+                        type=str, default = 'direction_clf.pickle',
                         help='File of trained models to predict directionality.')
     parser.add_argument('-o','--output',
                         type=str, default = 'out.csv',
