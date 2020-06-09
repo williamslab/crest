@@ -58,17 +58,17 @@ CREST_relationships have following options:
 * `-i` or `--input` : the .csv file contains the ratios information
 * `-o` or `--output` :  the .csv file of inferred relationship types and directionality. The default name is out.csv.
 * `--total_len <value>` : the total genetic length in cM
-* `--models_type` : name of trained models to infer relationship types. The default is type_clf.pickle. 
+* `--models_type` : name of trained models to infer relationship types. The default is type_clf.pickle. It will also be used to store new trained models if `--train` is enabled.
 * `--models_direction` : name of trained models to infer relationship directionality. The default is direction_clf.pickle. 
 * `--start <value>` : the minimum coverage rate to infer relationships. If one pair has coverage rate smaller than this value, the pair will not be inferred. The default value is 0.025.
 * `--end <value>` : the coverage rate to merge models. For pairs with coverage rates larger than this value, they will use the same trained model as the ones with this coverage rate. The default value is 0.2.
 * `--inv <value>` : the window size of coverage rate to train different models. It will be used to divide the coverage rate from the start to the end into different windows. The default value is 0.025.
-* `--prior [p1 p2 p3]` : the prior probability of three types of relationships. The default is 0.3333 for each type. 
+* `--prior [p1 p2 p3]` : the prior probability of three types of relationships. The default is 0.3333 for each type. If you believe the probabilities of three relationship types are equal, specify the prior probability and make sure the sum of these three values equals to 1. If you train new models and believe the testing data has the same distribution with your trained models, then there is no need to change the default.  
 * `--train` : train new models with labeled data
 * `--labels` : the file of labels for training dataset
 
 CREST_relationships will generate [output prefix].csv file with this format:
-`sample1 sample2 inferred_type prob_gp prob_av prob_hs inferred_direction prob1 prob2`
+`ID1 ID2 inferred_type prob_gp prob_av prob_hs inferred_direction prob1 prob2`
 For the `inferred_type` column, 1 is for GP, 2 is for AV, and 3 is for HS. For the `inferred_direction` column, 0 means sample1 is genetically older than sample2 and 1 means ample1 is genetically younger than sample2.
 
 ...
