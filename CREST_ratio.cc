@@ -274,9 +274,9 @@ struct secondPair {
     int num=0;
     double total=0;
     double max=0;
-    vector<double> lenOfSeg;
-    vector<double> numRel;
-    vector<double> numCluster;
+    //vector<double> lenOfSeg;
+    //vector<double> numRel;
+    //vector<double> numCluster;
     vector<double> coverage;
     vector<double> overlapLen1;
     vector<double> overlapLen2;
@@ -693,10 +693,10 @@ int main(int argc, char** argv) {
         (*it).max = IBDsegment[i][j].max;
         (*it).num = IBDsegment[i][j].segmentVec.size();
     
-        vector<segment>::iterator len;
-        for(len = IBDsegment[i][j].segmentVec.begin(); len != IBDsegment[i][j].segmentVec.end(); ++len){
-            (*it).lenOfSeg.push_back(abs((*len).value2-(*len).value1));
-        }
+        //vector<segment>::iterator len;
+        //for(len = IBDsegment[i][j].segmentVec.begin(); len != IBDsegment[i][j].segmentVec.end(); ++len){
+          //  (*it).lenOfSeg.push_back(abs((*len).value2-(*len).value1));
+        //}
 
         vector<int> commonRelatives;
         
@@ -794,8 +794,8 @@ int main(int argc, char** argv) {
     }// end if 
 
 
-        (*it).numRel.push_back( commonRelatives.size()/1.0);
-        (*it).numCluster.push_back( clusters.size()/1.0);
+       // (*it).numRel.push_back( commonRelatives.size()/1.0);
+        //(*it).numCluster.push_back( clusters.size()/1.0);
         double n = 0;
         double d1 = 0;
         double d2 = 0;
