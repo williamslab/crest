@@ -26,7 +26,7 @@ class KDEClassifier(BaseEstimator, ClassifierMixin):
         self.bandwidth = bandwidth
         self.kernel = kernel
         
-    def fit(self, X, y,bandwidths, prior = 0):
+    def fit(self, X, y,bandwidths):
         self.classes_ = np.sort(np.unique(y))
         training_sets = [X[y == yi] for yi in self.classes_]
         #
@@ -42,13 +42,14 @@ class KDEClassifier(BaseEstimator, ClassifierMixin):
         #self.models_ = [KernelDensity(bandwidth=best_params[tuple(Xi)]).fit(Xi) for Xi in training_set]
         
         #self.models_ = [KernelDensity(bandwidth=self.bandwidth, kernel=self.kernel).fit(Xi)for Xi in training_sets]
-        if prior == 0:                 
+                        
             self.logpriors_ = [np.log(Xi.shape[0]*1.0 / X.shape[0]) for Xi in training_sets]
         return self
         
     def predict_proba(self, X):
         logprobs = np.array([model.score_samples(X)
                              for model in self.models_]).T
+        
         result = np.exp(logprobs + self.logpriors_)
         return result / result.sum(1, keepdims=True)
         
@@ -125,7 +126,7 @@ def train_KDE_model(start, end, inv, features, labels, model_file, bandwidths):
     return models 
 
 # how to allow customize start/ end/ inv? 
-def prediction_KDE(features, start, end, inv, class_models, direction_model,prior=0):
+def prediction_KDE(features, start, end, inv, class_models, direction_model,prior):
 
     total_num = features.shape[0]
     results = np.empty([total_num, 9], dtype=object)
@@ -145,17 +146,17 @@ def prediction_KDE(features, start, end, inv, class_models, direction_model,prio
             
             direction_pred = direction_model.predict(features[i,5].reshape(1,-1))
             pred_prob1 = direction_model.predict_proba(features[i,5].reshape(1,-1))
-            results[i,2] = y_pred[0]
-            results[i,3:6] = pred_prob
-            results[i,6] = direction_pred[0]
-            results[i,7:9] = pred_prob1
+
+            
+
+            results[i,2] = int(y_pred[0])
+            results[i,3:6] = (pred_prob[0] * prior)/ sum(pred_prob[0] * prior)
+            results[i,6] = int(direction_pred[0])
+            results[i,7:9] = pred_prob1[0]
 
         else: 
             results[i,2] = 0
-            if prior == 0:
-                results[i,3:6] = [1/3, 1/3, 1/3]
-            else:
-                results[i,3:6] = prior[i,:]
+            results[i,3:6] = prior[:]
             results[i,6:9] = [0,0,0]
             
     return results
@@ -163,17 +164,26 @@ def prediction_KDE(features, start, end, inv, class_models, direction_model,prio
 
 def main(args):
     features = read_in_data(args.input,args.total_len)
+    if abs(sum(args.prior)-1) >0.01:
+        print("The sum of prior probability is not 1, will renormalize it. ")
+    prior = np.asarray(args.prior)/sum(args.prior)
     if args.train:
         #read in labels 
         with open(args.labels) as csvfile:
             labels = csv.reader(csvfile, delimiter=',')
         bandwidths = np.logspace(-2, -0.5, 30)
+        test_model = train_KDE_model(args.start, args.end, args.inv, features, labels, args.models_type, bandwidths)
+    else:
 
-    test_model = pickle.load(open(args.models_type, 'rb'))
+        test_model = pickle.load(open(args.models_type, 'rb'))
+
     direction_model = pickle.load(open(args.models_direction, 'rb'))
 
-    results = prediction_KDE(features, args.start, args.end, args.inv, test_model, direction_model)
-    np.savetxt(args.output, results, delimiter=',',fmt='%s')
+    results = prediction_KDE(features, args.start, args.end, args.inv, test_model, direction_model,prior)
+
+    with open(args.output, 'wb') as f:
+        f.write(b'ID1,ID2,Type,Prob_GP, Prob_AV, Prob_HS, Direction, Prob1, Prob2\n')
+        np.savetxt(f, results, delimiter=',',fmt='%s')
       
 
 if __name__ == '__main__':
@@ -183,36 +193,37 @@ if __name__ == '__main__':
     # default=0,
     #                    type=str,
     #                    help='path for fblocka.')
-    parser.add_argument('--train',
-                        help='To train new classifier with training data and labels.',
-                        action="store_true")
-    parser.add_argument('--start',
-                        type=float, default = 0.025,
-                        help='The minimum coverage to classify.')
-    parser.add_argument('--end',
-                        type=float, default = 0.20,
-                        help='The coverage to start to merge models.')
-    parser.add_argument('--inv',
-                        type=float,default = 0.025,
-                        help='The window size of coverage for each model.')
-    parser.add_argument('--prior',
-                        type=str, 
-                        help='File to give prior probability.')
+    
     parser.add_argument('-i', '--input',
                         type=str, required=True,
                         help='File with input data.')
+    parser.add_argument('--total_len', 
+                        type=float, default = 3536.5466,
+                        help='The total length of genome in cM.')
     parser.add_argument('--models_type',
                         type=str, default = 'type_clf.pickle',
                         help='File of trained models to predict relationship types.')
-    parser.add_argument('--total_len',
-                        type=float,default = 3346,
-                        help='The total length of genome in cM.')
     parser.add_argument('--models_direction', 
                         type=str, default = 'direction_clf.pickle',
                         help='File of trained models to predict directionality.')
     parser.add_argument('-o','--output',
                         type=str, default = 'out.csv',
                         help='File to output results.')
+    parser.add_argument('--start',
+                        type=float, default = 0.025,
+                        help='The minimum coverage rate to classify.')
+    parser.add_argument('--end',
+                        type=float, default = 0.20,
+                        help='The coverage rate to start to merge models.')
+    parser.add_argument('--inv',
+                        type=float,default = 0.025,
+                        help='The window size of coverage for each model.')
+    parser.add_argument('--prior',
+                        nargs = "*", type=float, default=[1/3,1/3,1/3],
+                        help='Prior probability of three types.')
+    parser.add_argument('--train',
+                        help='To train new classifier with training data and labels.',
+                        action="store_true")
     parser.add_argument('--labels',
                         type=str,
                         help='File of labels for trainning data.')
