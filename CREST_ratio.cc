@@ -24,7 +24,7 @@
 #include <map>
 #include <set>
 #include <iterator>
-#include "printInfo.h"
+#include "version.h"
 // #include <boost/algorithm/string.hpp>
 
 // #define SIZE 2500
