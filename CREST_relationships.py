@@ -3,16 +3,10 @@ import sys
 import os
 import numpy as np
 import csv
-import math 
-import random
 from sklearn.neighbors import KernelDensity
 from sklearn.model_selection import LeaveOneOut
 from sklearn.model_selection import GridSearchCV
-from scipy.stats import multivariate_normal
 import pickle
-from sklearn.model_selection import train_test_split 
-from sklearn.metrics import precision_recall_curve
-from yellowbrick.classifier import PrecisionRecallCurve
 from sklearn.base import BaseEstimator, ClassifierMixin
 from argparse import ArgumentParser
 
@@ -163,23 +157,6 @@ def prediction_KDE(features, start, end, inv, class_models, direction_model,prio
 
 
 def main(args):
-    
-    if os.path.exists("version.h"):
-        with open('version.h') as f:
-            for lines in f:
-                line = lines.split( )
-                if line[1] == "VERSION_NUMBER":
-                    version = line[2].replace('"','')
-                if line[1] == "RELEASE_DATE":
-                    date = line[2].replace('"','') + ' ' + line[3] + ' ' + line[4].replace('"','')
-        print("\nCREST  v" + version + "\n" + "Released " + date +"\n\n")
-    else:
-        print("Please download version.h file to get the version information.")
-    if args.version:
-        exit()
-    if args.input is None or (not os.path.exists(args.input)):
-        print('Please provide a valid input file.')
-        exit()
         
     features = read_in_data(args.input,args.total_len)
     if abs(sum(args.prior)-1) >0.01:
@@ -206,12 +183,9 @@ def main(args):
 
 if __name__ == '__main__':
     parser = ArgumentParser('CREST classifier to predict relationships')
-    parser.add_argument('-v', '--version',
-                        action="store_true", 
-                        help='Print version and release date information.')
     
     parser.add_argument('-i', '--input',
-                        type=str, 
+                        type=str, required = True,
                         help='File with input data.')
     parser.add_argument('--total_len', 
                         type=float, default = 3536.5466,
@@ -244,6 +218,17 @@ if __name__ == '__main__':
                         type=str,
                         help='File of labels for trainning data.')
     #
+    if os.path.exists("version.h"):
+        with open('version.h') as f:
+            for lines in f:
+                line = lines.split( )
+                if line[1] == "VERSION_NUMBER":
+                    version = line[2].replace('"','')
+                if line[1] == "RELEASE_DATE":
+                    date = line[2].replace('"','') + ' ' + line[3] + ' ' + line[4].replace('"','')
+        print("\nCREST  v" + version + "\n" + "Released " + date +"\n\n")
+    else:
+        print("Please download version.h file to get the version information.")
 
     args = parser.parse_args()
     main(args)
