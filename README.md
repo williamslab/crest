@@ -1,5 +1,4 @@
 # crest
-Classification of RelationShip Types
 
 ## Introduction
 CREST (**C**lassification of **R**elation**S**hip **T**ypes) is a tool that uses identity-by-descent (IBD) segments to classify second-degree relatives as avuncular, half-siblings, or grandparent/grandchild. It can also be used to infer the directionality of relationships and whether they are maternal or paternal related. 
@@ -65,7 +64,7 @@ For the `inferred_type` column, 1 is for GP, 2 is for AV, and 3 is for HS. For t
 
 For sex-inference, you will need to convert sex-specific genetic maps of your choosing to a .simmap format file.
 Information on how to do this can be found [here](https://github.com/williamslab/ped-sim#map-file):
-```
+```bash
 bash
 wget https://github.com/cbherer/Bherer_etal_SexualDimorphismRecombination/raw/master/Refined_genetic_map_b37.tar.gz
 tar xvzf Refined_genetic_map_b37.tar.gz
