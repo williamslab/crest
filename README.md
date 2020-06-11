@@ -37,7 +37,7 @@ Then CREST_ratios takes in the .seg file and .coef file from IBIS as input.
 
 CREST_ratios will generate [output prefix].csv file with this format:
 ```
-sample1 sample2 coverage_in_cM ratio1 ratio2
+ID1 ID2 coverage_in_cM ratio1 ratio2
 ```
 Details about other options see below.
 
@@ -56,7 +56,9 @@ The total map length in cM is available in the .bim file. The maplen.awk script 
 ```
 
 CREST_relationships will generate [output prefix].csv file with this format:
-`ID1 ID2 inferred_type prob_gp prob_av prob_hs inferred_direction prob1 prob2`
+```
+ID1 ID2 inferred_type prob_gp prob_av prob_hs inferred_direction prob1 prob2
+```
 For the `inferred_type` column, 1 is for GP, 2 is for AV, and 3 is for HS. For the `inferred_direction` column, 0 means sample1 is genetically older than sample2 and 1 means ample1 is genetically younger than sample2.
 
 ### Run CREST_sex_inference
