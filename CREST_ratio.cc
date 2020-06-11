@@ -24,14 +24,15 @@
 #include <map>
 #include <set>
 #include <iterator>
+#include "printInfo.h"
 // #include <boost/algorithm/string.hpp>
 
 // #define SIZE 2500
 using namespace std;
 ///////////////////////////////////////////////////////
 
-#define VERSION_NUMBER  "1.0.0"
-#define RELEASE_DATE    "30 Apr 2020"
+//#define VERSION_NUMBER  "1.0.0"
+//#define RELEASE_DATE    "30 Apr 2020"
 
 class CmdLineOpts {
   public:
@@ -304,12 +305,12 @@ dataBlock intersection( dataBlock x1y, dataBlock x2y ){
     segment s1,s2; 
     
     // store segments index for different chromosomes
-    for(int i=0; i < x1y.segmentVec.size(); i++){
+    for(int i=0; i < int(x1y.segmentVec.size()); i++){
         s1 = x1y.segmentVec[i];
         segByChrom1[s1.chrom-1].push_back(i);
     }
     
-    for(int j = 0; j < x2y.segmentVec.size(); j++){
+    for(int j = 0; j < int(x2y.segmentVec.size()); j++){
         s2 = x2y.segmentVec[j];
         segByChrom2[s2.chrom-1].push_back(j);
     }
@@ -322,7 +323,7 @@ dataBlock intersection( dataBlock x1y, dataBlock x2y ){
     // find overlap for each chromosome
     for(int chr=0; chr<22;chr++){
         
-        if(segByChrom1[chr].size() != 0 && segByChrom2[chr].size() != 0){
+        if(int(segByChrom1[chr].size()) != 0 && int(segByChrom2[chr].size()) != 0){
             
             segIndex1 = segByChrom1[chr];
             segIndex2 = segByChrom2[chr];
@@ -331,13 +332,13 @@ dataBlock intersection( dataBlock x1y, dataBlock x2y ){
             int n = 0;
             int k;
             segment seg;
-            while(m < segIndex1.size() && n < segIndex2.size()){
+            while(m < int(segIndex1.size()) && n < int(segIndex2.size())){
                 // if n is the last one, go to the next chrom
                 seg1 = x1y.segmentVec[segIndex1[m]];
                 seg2 = x2y.segmentVec[segIndex2[n]];
                 if(seg1.value1 <= seg2.value1){
                     k = n;
-                    while(k < segIndex2.size() && seg1.value2 > x2y.segmentVec[segIndex2[k]].value1){
+                    while(k < int(segIndex2.size()) && seg1.value2 > x2y.segmentVec[segIndex2[k]].value1){
                         seg = x2y.segmentVec[segIndex2[k]];
                         seg.value2 = min(seg.value2,seg1.value2);
                         result.segmentVec.push_back(seg);
@@ -349,7 +350,7 @@ dataBlock intersection( dataBlock x1y, dataBlock x2y ){
                     ++m;
                 } else{
                     k = m;
-                    while(k < segIndex1.size() && seg2.value2 > x1y.segmentVec[segIndex1[k]].value1){
+                    while(k < int(segIndex1.size()) && seg2.value2 > x1y.segmentVec[segIndex1[k]].value1){
                         seg = x1y.segmentVec[segIndex1[k]];
                         seg.value2 = min(seg.value2,seg2.value2);
                         result.segmentVec.push_back(seg);
@@ -385,12 +386,12 @@ dataBlock combine(dataBlock xy, dataBlock tmp){
         segment s1,s2;
         
         // store segments index for different chromosomes
-        for(int i=0; i < xy.segmentVec.size(); i++){
+        for(int i=0; i < int(xy.segmentVec.size()); i++){
             s1=xy.segmentVec[i];
             segByChrom1[s1.chrom-1].push_back(i);
         }
         
-        for(int j=0; j < tmp.segmentVec.size(); j++){
+        for(int j=0; j < int(tmp.segmentVec.size()); j++){
             s2=tmp.segmentVec[j];
             segByChrom2[s2.chrom-1].push_back(j);
         }
@@ -411,7 +412,7 @@ dataBlock combine(dataBlock xy, dataBlock tmp){
             vector<segment> newresult;
             segIndex1 = segByChrom1[chr];
             segIndex2 = segByChrom2[chr];
-            while(m < segByChrom1[chr].size() && n < segByChrom2[chr].size()){
+            while(m < int(segByChrom1[chr].size()) && n < int(segByChrom2[chr].size())){
                 // cout<<m<<" " << n <<endl;
                 // cout<<"first while"<<endl;
                 seg1 = xy.segmentVec[segIndex1[m]];
@@ -451,7 +452,7 @@ dataBlock combine(dataBlock xy, dataBlock tmp){
                 }
                 
             }
-            while(m < segByChrom1[chr].size()){
+            while(m < int(segByChrom1[chr].size())){
                // cout<<"second  while"<<endl;
                 seg1 = xy.segmentVec[segIndex1[m]];
                 num = newresult.size();
@@ -469,7 +470,7 @@ dataBlock combine(dataBlock xy, dataBlock tmp){
                 
             }
             
-            while(n < segByChrom2[chr].size()){
+            while(n < int(segByChrom2[chr].size())){
                // cout <<"third while"<<endl;
                 seg2 = tmp.segmentVec[segIndex2[n]];
                 num = newresult.size();
@@ -487,7 +488,7 @@ dataBlock combine(dataBlock xy, dataBlock tmp){
                 
             }
             // cout << newresult.size() << endl;
-            for (int i = 0; i < newresult.size();i++){
+            for (int i = 0; i < int(newresult.size());i++){
                 result.segmentVec.push_back(newresult[i]);
                 result.total += abs(newresult[i].value2 - newresult[i].value1);
                 result.max = max(result.max,abs(newresult[i].value2 - newresult[i].value1));
@@ -501,7 +502,7 @@ dataBlock combine(dataBlock xy, dataBlock tmp){
 
 ofstream & operator <<(ofstream& ofs, vector<double>& vec)
 {
-    for (int i = 0; i < vec.size(); i++)
+    for (int i = 0; i < int(vec.size()); i++)
     {
         ofs << vec[i] << ' ';
     }
@@ -709,7 +710,7 @@ int main(int argc, char** argv) {
         dataBlock ibd_rel;
         vector<MutRelative> relativeVec;
 
-        if (commonRelatives.size() !=0){
+        if (int(commonRelatives.size()) !=0){
             for (vector<int>::iterator it1 = commonRelatives.begin(); it1!=commonRelatives.end(); ++it1){
                 int k = (*it1)-1;
              
@@ -802,7 +803,7 @@ int main(int argc, char** argv) {
         double cov = 0;     
 
 //**********************************************************************************************
-        if (clusters.size() !=0){
+        if (int(clusters.size()) !=0){
             dataBlock x1y;
             dataBlock x2y;
             dataBlock tmp1;
@@ -828,7 +829,7 @@ int main(int argc, char** argv) {
                         x1y = IBDsegment[i][k];
                         x2y = IBDsegment[j][k];
                     }
-                    if(x1y.segmentVec.size() != 0 && x2y.segmentVec.size() != 0 ){
+                    if(int(x1y.segmentVec.size()) != 0 && int(x2y.segmentVec.size()) != 0 ){
 
                         tmp = intersection(x1y,x2y);
                         tmp1 = combine(tmp,tmp1);
