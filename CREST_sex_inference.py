@@ -4,41 +4,8 @@ from __future__ import division
 import numpy as np
 import time
 import sys
-
-
-
-###########################
-# Create an argument parser
-###########################
-
+import os
 import argparse
-
-parser = argparse.ArgumentParser()
-
-parser.add_argument('-i', '--input', dest = 'ifile', metavar = 'input_file_name', 
-    required = True, help = 'Name of the input file')
-parser.add_argument('-o', '--output', dest = 'ofile', metavar = 'output_file_name', 
-    required = True, help = 'Name of the output file')
-parser.add_argument('-m', '--map', dest = 'mfile', metavar = 'map_file_name', 
-    required = True, help = 'Name of the genetic map file (should be in .simmap format)')
-parser.add_argument('-b', '--bim', dest = 'bfile', metavar = 'bim_file',
-        required = True, help = 'A PLINK .bim containing the dataset-specific map (should contain 22 autosomes)')
-
-parser.add_argument('-w', '--window', metavar = 'window_size', 
-    type = int, default = 500, help = 'Window size in kilobases. Default: 500 kb')
-parser.add_argument('-k', '--keep', dest = 'keepfile', metavar = 'keep_file_name', 
-    default = None, help = 'Name of the file containing samples to keep. If not provided, all samples are kept.')
-
-args = parser.parse_args()
-
-input_file = args.ifile
-output_file = args.ofile
-map_file = args.mfile
-bim = args.bfile
-keep_file = args.keepfile
-
-# multiply by 1000 bp / kb * 0.5
-window_size = args.window * 500
 
 
 
@@ -337,7 +304,7 @@ def pos_search(pos, simmap):
 
 
 
-def get_windows(bim, simmap, segment):
+def get_windows(bim, simmap, segment, window_size):
   '''
   Find windows overlapping an IBD segment on the genetic map and get their lengths in Morgans
   The end_processing input dictates how segments approaching the map ends should be handled
@@ -391,7 +358,7 @@ def get_windows(bim, simmap, segment):
 
 
 
-def segment_gaps(bim, simmap, all_segments):
+def segment_gaps(bim, simmap, all_segments, window_size):
   '''
   For all segments shared, get the lengths of the non-segment gaps
   '''
@@ -482,18 +449,18 @@ def logp_gaps(gaps):
 # input is the dictionary produced in get_LODs: pairs[('id1', 'id2')] = [ seg1:(chr, start, stop), ..., segN:(chr, start, stop)]
 # output is a pair of LOD scores (female_LOD, male_LOD)
 
-def LOD_gp(bim, simmap, data, key):
+def LOD_gp(bim, simmap, data, key, window_size):
   
   list_logp_female = []
   list_logp_male = []
 
   for segment in data:
     # get the window lengths
-    lengths = get_windows(bim, simmap, segment)
+    lengths = get_windows(bim, simmap, segment, window_size)
     list_logp_female.append(logp_k_crossovers(0, lengths['female']))
     list_logp_male.append(logp_k_crossovers(0, lengths['male']))
 
-  all_gaps = segment_gaps(bim, simmap, data)
+  all_gaps = segment_gaps(bim, simmap, data, window_size)
   list_logp_gaps_female = logp_gaps(all_gaps['female'])
   list_logp_gaps_male = logp_gaps(all_gaps['male'])
 
@@ -505,14 +472,14 @@ def LOD_gp(bim, simmap, data, key):
 
 
 
-def LOD_hs(bim, simmap, data, key):
+def LOD_hs(bim, simmap, data, key, window_size):
 
   list_logp_female = []
   list_logp_male = []
 
   for segment in data:
     # get the window lengths
-    lengths = get_windows(bim, simmap, segment)
+    lengths = get_windows(bim, simmap, segment, window_size)
     # adjust effective lengths for the 2 HS meioses
     lengths['female'] = [2 * x for x in lengths['female']]
     lengths['male'] = [2 * x for x in lengths['male']]
@@ -520,7 +487,7 @@ def LOD_hs(bim, simmap, data, key):
     list_logp_female.append(logp_k_crossovers(0, lengths['female']))
     list_logp_male.append(logp_k_crossovers(0, lengths['male']))
 
-  all_gaps = segment_gaps(bim, simmap, data)
+  all_gaps = segment_gaps(bim, simmap, data, window_size)
   all_gaps['female'] = [2 * x for x in all_gaps['female']]
   all_gaps['male'] = [2 * x for x in all_gaps['male']]
 
@@ -535,7 +502,7 @@ def LOD_hs(bim, simmap, data, key):
 
 
 
-def get_LODs(pairs, bim, simmap):
+def get_LODs(pairs, bim, simmap, window_size):
   '''
   For a dictionary with format:
   
@@ -554,8 +521,8 @@ def get_LODs(pairs, bim, simmap):
     data = pairs[pair]
     segnum = len(data)
     LODs[pair]['segnum'] = segnum
-    LODs[pair]['gpLOD'] = LOD_gp(bim, simmap, data, pair)
-    LODs[pair]['hsLOD'] = LOD_hs(bim, simmap, data, pair)
+    LODs[pair]['gpLOD'] = LOD_gp(bim, simmap, data, pair, window_size)
+    LODs[pair]['hsLOD'] = LOD_hs(bim, simmap, data, pair, window_size)
   return LODs
 
 
@@ -564,7 +531,7 @@ def get_LODs(pairs, bim, simmap):
 # Function to write output
 ##########################
 
-def write_output(input_struct, file_name, bim, simmap):
+def write_output(input_struct, file_name, bim, simmap, window_size):
   '''
   Write out results of IBD inference
   '''
@@ -583,7 +550,7 @@ def write_output(input_struct, file_name, bim, simmap):
     pairs_dict[pair].append(data)
 
   # compute LOD scores for all pairs
-  out = get_LODs(pairs_dict, bim, simmap)
+  out = get_LODs(pairs_dict, bim, simmap, window_size)
   
   # write output
   with open(file_name, 'w') as file:
@@ -603,15 +570,62 @@ def write_output(input_struct, file_name, bim, simmap):
 # Read input, get map, write output
 ###################################
 
-def main():
+def main(args):
+  input_file = args.ifile
+  output_file = args.ofile
+  map_file = args.mfile
+  bim = args.bfile
+  keep_file = args.keepfile
+
+  # multiply by 1000 bp / kb * 0.5
+  window_size = args.window * 500
+
   t0 = time.time()
   in_file = read_input(input_file, keep_file)
   bim_ends = compute_bim_ends(bim)
   simmap = read_simmap(map_file)
-  write_output(in_file, output_file, bim_ends, simmap)
+  write_output(in_file, output_file, bim_ends, simmap, window_size)
   t1 = time.time()
   print('Total run-time is:', t1 - t0)
 
 
 if __name__ == '__main__':
-  main()
+
+  # print version number
+  if os.path.exists("version.h"):
+    with open('version.h') as f:
+      for lines in f:
+        line = lines.split( )
+        if line[1] == "VERSION_NUMBER":
+          version = line[2].replace('"','')
+        if line[1] == "RELEASE_DATE":
+          date = line[2].replace('"','') + ' ' + line[3] + ' ' + line[4].replace('"','')      
+    print("\nCREST  v" + version + "\n" + "(Released " + date +")\n\n")
+  else:
+    print("Please download version.h file to get the version information.")
+
+  ##########################
+  # Create argument parser #
+  ##########################
+
+  parser = argparse.ArgumentParser()
+
+  # required
+  parser.add_argument('-i', '--input', dest = 'ifile', metavar = 'input_file_name', 
+    required = True, help = 'Name of the input file')
+  parser.add_argument('-o', '--output', dest = 'ofile', metavar = 'output_file_name', 
+    required = True, help = 'Name of the output file')
+  parser.add_argument('-m', '--map', dest = 'mfile', metavar = 'map_file_name', 
+    required = True, help = 'Name of the genetic map file (should be in .simmap format)')
+  parser.add_argument('-b', '--bim', dest = 'bfile', metavar = 'bim_file',
+     required = True, help = 'A PLINK .bim containing the dataset-specific map (should contain 22 autosomes)')
+
+  # optional
+  parser.add_argument('-w', '--window', metavar = 'window_size', 
+    type = int, default = 500, help = 'Window size in kilobases. Default: 500 kb')
+  parser.add_argument('-k', '--keep', dest = 'keepfile', metavar = 'keep_file_name', 
+    default = None, help = 'Name of the file containing samples to keep. If not provided, all samples are kept.')
+
+  args = parser.parse_args()
+
+  main(args)
