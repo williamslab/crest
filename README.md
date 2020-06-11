@@ -84,7 +84,7 @@ CREST_sex_inference.py -i [your IBIS data].seg -m [your map].simmap -b [your (ne
 The .seg file contains the IBD segments for all samples and .coef file is a list of relative pairs with inferred relatedness. If use IBD segment and relative information from other tools, please make sure to have the same data format. The useful information from .seg file includes sample1, sample2, chromosome, IBD type, genetic start position, genetic end position, genetic length in 1st, 2nd, 3rd, 6th, 7th, 8th, 9th columns. The information sample1, sample2, IBD2_fraction, and degree_of_relatedness in 1st, 2nd, 4th, 6th column of .coef file is used.  
 
 ### Relationship Type Inference
-CREST_relationships requires python packages including sklearn, numpy, pickle. Please make sure you have them installed.
+CREST_relationships requires python packages including sklearn, numpy. Please make sure you have them installed.
 #### Command line arguments for CREST_ratios:
 CREST_ratios also have following options:
 * `--ibd2 <value between 0 and 1>` : the threshold of IBD2 ratios to exclude relatives from second-degree relatives. The default value is 0.02
