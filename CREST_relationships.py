@@ -163,6 +163,20 @@ def prediction_KDE(features, start, end, inv, class_models, direction_model,prio
 
 
 def main(args):
+    if args.version:
+        if os.path.exists("printInfo.h"):
+            with open('printInfo.h') as f:
+                for lines in f:
+                    line = lines.split( )
+                    if line[1] == "VERSION_NUMBER":
+                        version = line[2].replace('"','')
+                    if line[1] == "RELEASE_DATE":
+                        date = line[2].replace('"','') + ' ' + line[3] + ' ' + line[4].replace('"','')
+            f.close()
+            print("\nCREST  v" + version + "\n" + "(Released " + date +")\n\n")
+        else:
+            print("Please download printInfo.h file to get the version information.")
+        exit()
     features = read_in_data(args.input,args.total_len)
     if abs(sum(args.prior)-1) >0.01:
         print("The sum of prior probability is not 1, will renormalize it. ")
@@ -195,7 +209,7 @@ if __name__ == '__main__':
     #                    help='path for fblocka.')
     
     parser.add_argument('-i', '--input',
-                        type=str, required=True,
+                        type=str, 
                         help='File with input data.')
     parser.add_argument('--total_len', 
                         type=float, default = 3536.5466,
@@ -227,6 +241,9 @@ if __name__ == '__main__':
     parser.add_argument('--labels',
                         type=str,
                         help='File of labels for trainning data.')
+    parser.add_argument('-v', '--version',
+                        action="store_true", 
+                        help='Print version and release date information.')
 
     args = parser.parse_args()
     main(args)
