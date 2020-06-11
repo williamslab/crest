@@ -5,7 +5,7 @@ import numpy as np
 import csv
 import math 
 import random
-from sklearn.neighbors.kde import KernelDensity
+from sklearn.neighbors import KernelDensity
 from sklearn.model_selection import LeaveOneOut
 from sklearn.model_selection import GridSearchCV
 from scipy.stats import multivariate_normal
@@ -163,20 +163,24 @@ def prediction_KDE(features, start, end, inv, class_models, direction_model,prio
 
 
 def main(args):
+    
+    if os.path.exists("version.h"):
+        with open('version.h') as f:
+            for lines in f:
+                line = lines.split( )
+                if line[1] == "VERSION_NUMBER":
+                    version = line[2].replace('"','')
+                if line[1] == "RELEASE_DATE":
+                    date = line[2].replace('"','') + ' ' + line[3] + ' ' + line[4].replace('"','')
+        print("\nCREST  v" + version + "\n" + "Released " + date +"\n\n")
+    else:
+        print("Please download version.h file to get the version information.")
     if args.version:
-        if os.path.exists("version.h"):
-            with open('version.h') as f:
-                for lines in f:
-                    line = lines.split( )
-                    if line[1] == "VERSION_NUMBER":
-                        version = line[2].replace('"','')
-                    if line[1] == "RELEASE_DATE":
-                        date = line[2].replace('"','') + ' ' + line[3] + ' ' + line[4].replace('"','')
-            f.close()
-            print("\nCREST  v" + version + "\n" + "(Released " + date +")\n\n")
-        else:
-            print("Please download printInfo.h file to get the version information.")
         exit()
+    if args.input is None or (not os.path.exists(args.input)):
+        print('Please provide a valid input file.')
+        exit()
+        
     features = read_in_data(args.input,args.total_len)
     if abs(sum(args.prior)-1) >0.01:
         print("The sum of prior probability is not 1, will renormalize it. ")
@@ -202,11 +206,9 @@ def main(args):
 
 if __name__ == '__main__':
     parser = ArgumentParser('CREST classifier to predict relationships')
-    # parser.add_argument('--fblock-path',
-    # type=bool,
-    # default=0,
-    #                    type=str,
-    #                    help='path for fblocka.')
+    parser.add_argument('-v', '--version',
+                        action="store_true", 
+                        help='Print version and release date information.')
     
     parser.add_argument('-i', '--input',
                         type=str, 
@@ -241,9 +243,7 @@ if __name__ == '__main__':
     parser.add_argument('--labels',
                         type=str,
                         help='File of labels for trainning data.')
-    parser.add_argument('-v', '--version',
-                        action="store_true", 
-                        help='Print version and release date information.')
+    #
 
     args = parser.parse_args()
     main(args)
