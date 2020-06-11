@@ -164,8 +164,8 @@ def prediction_KDE(features, start, end, inv, class_models, direction_model,prio
 
 def main(args):
     if args.version:
-        if os.path.exists("printInfo.h"):
-            with open('printInfo.h') as f:
+        if os.path.exists("version.h"):
+            with open('version.h') as f:
                 for lines in f:
                     line = lines.split( )
                     if line[1] == "VERSION_NUMBER":
