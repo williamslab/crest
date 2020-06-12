@@ -1,71 +1,71 @@
-# crest
+# CREST
 
-## Introduction
-CREST (**C**lassification of **R**elation**S**hip **T**ypes) is a tool that uses identity-by-descent (IBD) segments to classify second-degree relatives as grandparent/grandchild(GP), avuncular(AV), or half-siblings(HS). It can also be used to infer the directionality of relationships and whether they are maternal or paternal related. 
+CREST (**C**lassification of **RE**lation**S**hip **T**ypes) is a tool that uses identical by descent (IBD) segments to classify second degree relatives as grandparent/grandchild (GP), avuncular (AV), or half-siblings (HS). It can also be used to infer the directionality of relationships and whether they are maternally or paternally related.
 
 ## Quick Start
-Follow these steps to get CREST results quickly and easily. All file names and directories in brackets should be replaced with names and directories of your choosing. CREST includes three parts: CREST_ratios to calculate the ratios of IBD sharing with mutual relatives, CREST_relationships to infer relationship types and directionality, and CREST_sex_inference to infer whether they are maternal or paternal related.
-### Your Data
-CREST, and IBIS, if you choose to use it, requires genotype data in a PLINK binary file format. Note that CREST currently uses autosomal IBD only, so if you have non-autosomal data, be sure to exclude it later on.
-### Getting IBD Segments
-We recommend using [IBIS](https://github.com/williamslab/ibis) to extract IBD information. It tends to infer contiguous segments, which is especially important for sex inference. 
-Before running IBIS, we advise adding a genetic map to your .bim file. See the IBIS documentation [here](https://github.com/williamslab/ibis#Steps-for-running-IBIS):
+
+### 0. Genetic Data
+CREST requires a PLINK format .bim file, and IBIS, if you choose to use it, requires genotype data in PLINK binary format. [PLINK](https://www.cog-genomics.org/plink2/) converts to this format with the `--make-bed` option.
+
+### 1. Getting IBD Segments
+We recommend using [IBIS](https://github.com/williamslab/ibis) to extract IBD segments. It tends to infer contiguous segments, which is especially important for sex inference.
+Before running IBIS, insert a genetic map to your .bim file with the command below. The [IBIS documentation](https://github.com/williamslab/ibis#Steps-for-running-IBIS) provides links to the HapMap genetic map.
 ```
 ./add-map-plink.pl [your data].bim [map directory]/genetic_map_GRCh37_chr{1..22}.txt > [your new data].bim
 ```
 
 Then run IBIS itself:
 ```
-ibis [your data].bed [your new data].bim [your data].fam -f [your IBIS data]
+ibis [your data].bed [your new data].bim [your data].fam -f [your IBIS output] -printCoef
 ```
 or if you rename the new .bim, you can supply all three at once:
 ```
-ibis -b [your data] -f [your IBIS data]
+ibis -b [your data] -f [your IBIS output] -printCoef
 ```
 
-### Run CREST_ratios
+### 2. Run crest_ratio
 
-First, complie by running 
+First, compile by running
 ```
 make
 ```
-Then CREST_ratios takes in the .seg file and .coef file from IBIS as input. 
+Then run crest_ratio with the .seg and .coef files from IBIS as input.
 ```
-./crest_ratios -i [ibd segment].seg -r [relative list].coef -o [output prefix]
+./crest_ratio -i [your IBIS output].seg -r [your IBIS output].coef -o [ratio output prefix]
 ```
 
-CREST_ratios will generate [output prefix].csv file with this format:
+CREST_ratio will generate [ratio output prefix].csv file with this format:
 ```
 ID1 ID2 coverage_in_cM ratio1 ratio2
 ```
-Details about other options see [below](#command-line-arguments-for-CREST_ratios).
+Details about other options are [below](#command-line-arguments-for-CREST_ratios).
 
 
-### Run CREST_relationships
+### 3. Run CREST_relationships.py
 
-The CREST_relationships takes in the .csv output of CREST_ratios as the input file. It also needs the total map length in cM to calculate the coverage rate. The basic useage is 
+CREST_relationships.py takes in the .csv from crest_ratio as input. It also needs the total map length in cM to calculate the coverage rate. The basic usage is
 ```
-./CREST_relationships -i [ratios].csv --total_len [total length of genome] -o [output prefix].csv 
+./CREST_relationships.py -i [ratio output prefix].csv --total_len [total length of genome] -o [relationships output prefix].csv
 ```
 
 The total map length in cM is available in the .bim file. The maplen.awk script in [IBIS](https://github.com/williamslab/ibis) calculates this in the following way:
 ```
 ./maplen.awk [bim files ...]
 ```
-Details about other options see [below](#command-line-arguments-for-CREST_relationships).
+Details about other options are [below](#command-line-arguments-for-CREST_relationships).
 
-CREST_relationships will generate [output prefix].csv file with this format:
+CREST_relationships.py will generate [relationship output prefix].csv file with this format:
 ```
 ID1 ID2 inferred_type prob_gp prob_av prob_hs inferred_direction prob1 prob2
 ```
-For the `inferred_type` column, 1 is for GP, 2 is for AV, and 3 is for HS. For the `inferred_direction` column, 0 means sample1 is genetically older than sample2 and 1 means ample1 is genetically younger than sample2.
+For the `inferred_type` column, 1 is for GP, 2 is for AV, and 3 is for HS. For the `inferred_direction` column, 0 means sample1 is genetically older than sample2 and 1 means sample1 is genetically younger than sample2.
 
-### Run CREST_sex_inference
+### 4. Run CREST_sex_inference.py
 
-For sex-inference, you will need to convert sex-specific genetic maps of your choosing to a .simmap format file.
-Information on how to do this can be found [here](https://github.com/williamslab/ped-sim#map-file):
+For sex-inference, you will need to put sex-specific genetic maps into a .simmap format file.
+Information on how to do this can be found [here](https://github.com/williamslab/ped-sim#map-file); to use the [Bhérer et al. (2017)](http://dx.doi.org/10.1038/ncomms14994) genetic maps, run:
+
 ```bash
-bash
 wget https://github.com/cbherer/Bherer_etal_SexualDimorphismRecombination/raw/master/Refined_genetic_map_b37.tar.gz
 tar xvzf Refined_genetic_map_b37.tar.gz
 printf "#chr\tpos\tmale_cM\tfemale_cM\n" > [your map].simmap
@@ -77,7 +77,7 @@ done
 ```
 Now you are ready to run the sex-inference script:
 ```
-CREST_sex_inference.py -i [your IBIS data].seg -m [your map].simmap -b [your (new) data].bim -o [sex inference output]
+CREST_sex_inference.py -i [your IBIS output].seg -m [your map].simmap -b [your (new) data].bim -o [sex inference output]
 ```
 ## Thorough Start
 ### Pre-CREST Data Generation and Curation
