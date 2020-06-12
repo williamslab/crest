@@ -47,7 +47,7 @@ The CREST_relationships takes in the .csv output of CREST_ratios as the input fi
 ```
 ./CREST_relationships -i [ratios].csv --total_len [total length of genome] -o [output prefix].csv 
 ```
-Details about other options see below(#command-line-arguments-for-CREST_relationships)..
+Details about other options see below(#command-line-arguments-for-crest_relationships)..
 
 The total map length in cM is available in the .bim file. The maplen.awk script in [IBIS](https://github.com/williamslab/ibis) calculates this in the following way:
 ```
