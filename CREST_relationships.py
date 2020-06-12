@@ -182,7 +182,7 @@ def main(args):
       
 
 if __name__ == '__main__':
-    parser = ArgumentParser('CREST classifier to predict relationships')
+    parser = ArgumentParser('CREST_relationships.py')
     
     parser.add_argument('-i', '--input',
                         type=str, required = True,

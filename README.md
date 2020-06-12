@@ -1,7 +1,7 @@
 # crest
 
 ## Introduction
-CREST (**C**lassification of **R**elation**S**hip **T**ypes) is a tool that uses identity-by-descent (IBD) segments to classify second-degree relatives as avuncular, half-siblings, or grandparent/grandchild. It can also be used to infer the directionality of relationships and whether they are maternal or paternal related. 
+CREST (**C**lassification of **R**elation**S**hip **T**ypes) is a tool that uses identity-by-descent (IBD) segments to classify second-degree relatives as grandparent/grandchild(GP), avuncular(AV), or half-siblings(HS). It can also be used to infer the directionality of relationships and whether they are maternal or paternal related. 
 
 ## Quick Start
 Follow these steps to get CREST results quickly and easily. All file names and directories in brackets should be replaced with names and directories of your choosing. CREST includes three parts: CREST_ratios to calculate the ratios of IBD sharing with mutual relatives, CREST_relationships to infer relationship types and directionality, and CREST_sex_inference to infer whether they are maternal or paternal related.
@@ -38,7 +38,7 @@ CREST_ratios will generate [output prefix].csv file with this format:
 ```
 ID1 ID2 coverage_in_cM ratio1 ratio2
 ```
-Details about other options see below.
+Details about other options see [below](#command-line-arguments-for-CREST_ratios).
 
 
 ### Run CREST_relationships
@@ -47,12 +47,12 @@ The CREST_relationships takes in the .csv output of CREST_ratios as the input fi
 ```
 ./CREST_relationships -i [ratios].csv --total_len [total length of genome] -o [output prefix].csv 
 ```
-Details about other options see below.
 
 The total map length in cM is available in the .bim file. The maplen.awk script in [IBIS](https://github.com/williamslab/ibis) calculates this in the following way:
 ```
 ./maplen.awk [bim files ...]
 ```
+Details about other options see [below](#command-line-arguments-for-CREST_relationships).
 
 CREST_relationships will generate [output prefix].csv file with this format:
 ```
@@ -81,17 +81,17 @@ CREST_sex_inference.py -i [your IBIS data].seg -m [your map].simmap -b [your (ne
 ```
 ## Thorough Start
 ### Pre-CREST Data Generation and Curation
-The .seg file contains the IBD segments for all samples and .coef file is a list of relative pairs with inferred relatedness. If use IBD segment and relative information from other tools, please make sure to have the same data format. The useful information from .seg file includes sample1, sample2, chromosome, IBD type, genetic start position, genetic end position, genetic length in 1st, 2nd, 3rd, 6th, 7th, 8th, 9th columns. The information sample1, sample2, IBD2_fraction, and degree_of_relatedness in 1st, 2nd, 4th, 6th column of .coef file is used.  
+The IBIS format .seg file contains the IBD segments for all samples and .coef file is a list of relative pairs with inferred relatedness. If you want to use IBD segments and relative information from other tools, please make sure to have the same data format. The useful information from .seg file includes ID1, ID2, chromosome, IBD type, genetic start position, genetic end position, genetic length in 1st, 2nd, 3rd, 6th, 7th, 8th, 9th columns correspondingly. The information ID1, ID2, IBD2_fraction, and degree_of_relatedness in 1st, 2nd, 4th, 6th columns of .coef file is used.  
 
 ### Relationship Type Inference
 CREST_relationships requires python packages including sklearn, numpy. Please make sure you have them installed.
 #### Command line arguments for CREST_ratios:
 CREST_ratios also have following options:
-* `--ibd2 <value between 0 and 1>` : the threshold of IBD2 ratios to exclude relatives from second-degree relatives. The default value is 0.02
+* `--ibd2 <value between 0 and 1>` : the threshold of IBD2 ratios to exclude some relatives from second-degree relatives, since GP, AV, and HS are expected to share 0 ibd2 proportion. The default value is 0.02. 
 
 * `--max_degree <integer larger than 2>`: the upper bound of degree of relatedness for mutual relatives to the pair. The default value is 6. 
 
-* `--cluster_thres <value>` : the threshold of genetic length in cM to cluster mutual relatives. If shared IBD length between mutual relatives is large than this threshold, then they are considered as relatives to each other too. The default value is 10. 
+* `--cluster_thresh <value>` : the threshold of genetic length in cM to cluster mutual relatives. If shared IBD length between mutual relatives is large than this threshold, then they will be considered as relatives to each other too. We will take the union of their IBD segments to calculate the ratios. The default value is 10. 
 
 #### Command line arguments for CREST_relationships:
 CREST_relationships have following options:
@@ -115,7 +115,7 @@ CREST_relationships have following options:
 
 * `--train` : train new models with labeled data
 
-* `--labels` : the file of labels for training dataset	
+* `--labels` : the file containing labels for training dataset	
 
 ### Parental Sex Inference
 #### Command line arguments:
