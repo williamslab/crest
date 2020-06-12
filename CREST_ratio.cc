@@ -31,9 +31,6 @@
 using namespace std;
 ///////////////////////////////////////////////////////
 
-//#define VERSION_NUMBER  "1.0.0"
-//#define RELEASE_DATE    "30 Apr 2020"
-
 class CmdLineOpts {
   public:
 
@@ -69,7 +66,7 @@ bool CmdLineOpts::parseCmdLineOptions(int argc, char **argv) {
   
     {"ibd2", required_argument, NULL, IBD},
     {"max_degree", required_argument, NULL, DEGREE},
-    {"cluster_thres", required_argument, NULL, CLS_THRES},
+    {"cluster_thresh", required_argument, NULL, CLS_THRES},
 
     {0, 0, 0, 0}
   };
@@ -140,7 +137,7 @@ bool CmdLineOpts::parseCmdLineOptions(int argc, char **argv) {
       case CLS_THRES:
     clusterThres = strtod(optarg, &endptr);
     if (errno != 0 || *endptr != '\0') {
-      fprintf(stderr, "ERROR: unable to parse --cluster_thres argument as floating point value\n");
+      fprintf(stderr, "ERROR: unable to parse --cluster_thresh argument as floating point value\n");
       if (errno != 0)
         perror("strtod");
       exit(2);
@@ -183,14 +180,14 @@ void CmdLineOpts::printUsage(FILE *out, char *programName) {
   fprintf(out, "%s [ARGUMENTS]\n", programName);
   fprintf(out, "\n");
   fprintf(out, "REQUIRED ARGUMENTS:\n");
-  fprintf(out, "  -i <filename>\t\tseg file including all ibdsegments among samples\n");
-  fprintf(out, "  -r <filename>\t\tcoef file containing a list of relatives within samples\n");
+  fprintf(out, "  -i <filename>\t\tIBIS format seg file including all ibd segments among samples\n");
+  fprintf(out, "  -r <filename>\t\tIBIS format coef file containing a list of relatives within samples\n");
   fprintf(out, "  -o <prefix>\t\toutput prefix (creates <prefix>.csv.)\n");
   
   fprintf(out, "OPTIONS:\n");
-  fprintf(out, "  --ibd2 <#>\tibd2 proportion to exclude some close relative types (default 0.02; 0 disables)\n");
-  fprintf(out, "  --cluster_thres <#>\tthreshold in cM to cluster relatives \n");
-  fprintf(out, "  --max_degree <#>\tupper bound of degree of relatedness to consider as mutual relatives \n");
+  fprintf(out, "  --ibd2 <#>\t\tminimum ibd2 proportion to exclude some close relative types (default 0.02; 0 disables)\n");
+  fprintf(out, "  --cluster_thresh <#>\t\tthreshold in cM to cluster relatives (See README for details)\n");
+  fprintf(out, "  --max_degree <#>\t\tupper bound of degree of relatedness to consider as mutual relatives \n");
   fprintf(out, "\n");
 }
 
