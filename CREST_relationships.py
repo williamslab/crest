@@ -175,8 +175,8 @@ def main(args):
     direction_model = pickle.load(open(args.models_direction, 'rb'))
 
     results = prediction_KDE(features, args.start, args.end, args.inv, test_model, direction_model,prior)
-
-    with open(args.output, 'wb') as f:
+    output = args.output+'.csv'
+    with open(output, 'wb') as f:
         f.write(b'ID1,ID2,Type,Prob_GP, Prob_AV, Prob_HS, Direction, Prob1, Prob2\n')
         np.savetxt(f, results, delimiter=',',fmt='%s')
       
@@ -197,7 +197,7 @@ if __name__ == '__main__':
                         type=str, default = 'direction_clf.pickle',
                         help='File of trained models to predict directionality.')
     parser.add_argument('-o','--output',
-                        type=str, default = 'out.csv',
+                        type=str, default = 'out',
                         help='File to output results.')
     parser.add_argument('--start',
                         type=float, default = 0.025,
