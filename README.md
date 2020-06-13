@@ -23,44 +23,44 @@ or if you rename the new .bim, you can supply all three at once:
 ibis -b [your data] -f [your IBIS output] -printCoef
 ```
 
-### 2. Run crest_ratio
+### 2. Run `crest_ratio`
 
 First, compile by running
 ```
 make
 ```
-Then run crest_ratio with the .seg and .coef files from IBIS as input.
+Then run `crest_ratio` with the .seg and .coef files from IBIS as input.
 ```
 ./crest_ratio -i [your IBIS output].seg -r [your IBIS output].coef -o [ratio output prefix]
 ```
 
-CREST_ratio will generate [ratio output prefix].csv file with this format:
+`crest_ratio` will generate [ratio output prefix].csv file with this format:
 ```
 ID1 ID2 coverage_in_cM ratio1 ratio2
 ```
 Details about other options are [below](#command-line-arguments-for-CREST_ratios).
 
 
-### 3. Run CREST_relationships.py
+### 3. Run `CREST_relationships.py`
 
-CREST_relationships.py takes in the .csv from crest_ratio as input. It also needs the total map length in cM to calculate the coverage rate. The basic usage is
+`CREST_relationships.py` takes in the .csv from `crest_ratio` as input. It also needs the total map length in cM to calculate the coverage rate. The basic usage is
 ```
-./CREST_relationships.py -i [ratio output prefix].csv --total_len [total length of genome] -o [relationships output prefix].csv
+./CREST_relationships.py -i [ratio output prefix].csv --total_len [total length of genome] -o [relationships output prefix]
 ```
 
 The total map length in cM is available in the .bim file. The maplen.awk script in [IBIS](https://github.com/williamslab/ibis) calculates this in the following way:
 ```
 ./maplen.awk [bim files ...]
 ```
-Details about other options are [below](#command-line-arguments-for-CREST_relationships).
+Details about other options to `CREST_relationships.py` are [below](#command-line-arguments-for-CREST_relationships).
 
-CREST_relationships.py will generate [relationship output prefix].csv file with this format:
+`CREST_relationships.py` will generate [relationship output prefix].csv file with this format:
 ```
 ID1 ID2 inferred_type prob_gp prob_av prob_hs inferred_direction prob1 prob2
 ```
 For the `inferred_type` column, 1 is for GP, 2 is for AV, and 3 is for HS. For the `inferred_direction` column, 0 means sample1 is genetically older than sample2 and 1 means sample1 is genetically younger than sample2.
 
-### 4. Run CREST_sex_inference.py
+### 4. Run `CREST_sex_inference.py`
 
 For sex-inference, you will need to put sex-specific genetic maps into a .simmap format file.
 Information on how to do this can be found [here](https://github.com/williamslab/ped-sim#map-file); to use the [Bhérer et al. (2017)](http://dx.doi.org/10.1038/ncomms14994) genetic maps, run:
@@ -77,8 +77,14 @@ done
 ```
 Now you are ready to run the sex-inference script:
 ```
-CREST_sex_inference.py -i [your IBIS output].seg -m [your map].simmap -b [your (new) data].bim -o [sex inference output]
+./CREST_sex_inference.py -i [your IBIS output].seg -m [your map].simmap -b [your (new) data].bim -o [sex inference output]
 ```
+The above will compute LOD scores for _all_ pairs. To limit to only second degree relatives, you can use the `-k` (keep) option as:
+```
+./CREST_sex_inference.py -i [your IBIS output].seg -m [your map].simmap -b [your (new) data].bim -o [sex inference output] -k <(awk '$6 == 2' [your IBIS output].coef)
+```
+The file redirection `<( ... )` syntax works in bash. Other shells can run `awk '$6 == 2' [your IBIS output].coef > second_degree.coef`, and then run `CREST_sex_inference.py` with `-k second_degree.coef`.
+
 ## Thorough Start
 ### Pre-CREST Data Generation and Curation
 The IBIS format .seg file contains the IBD segments for all samples and .coef file is a list of relative pairs with inferred relatedness. If you want to use IBD segments and relative information from other tools, please make sure to have the same data format. The useful information from .seg file includes ID1, ID2, chromosome, IBD type, genetic start position, genetic end position, genetic length in 1st, 2nd, 3rd, 6th, 7th, 8th, 9th columns correspondingly. The information ID1, ID2, IBD2_fraction, and degree_of_relatedness in 1st, 2nd, 4th, 6th columns of .coef file is used.  
