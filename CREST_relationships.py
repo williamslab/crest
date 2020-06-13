@@ -203,7 +203,7 @@ if __name__ == '__main__':
                         type=str, default = path + 'direction_clf.pickle',
                         help='File of trained models to predict directionality.')
     parser.add_argument('-o','--output',
-                        type=str, default = path + 'relationships',
+                        type=str, default = 'relationships',
                         help='File to output results.')
     parser.add_argument('--start',
                         type=float, default = 0.025,
