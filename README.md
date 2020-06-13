@@ -58,7 +58,7 @@ Details about other options to `CREST_relationships.py` are [below](#command-lin
 ```
 ID1 ID2 inferred_class inferred_type prob_gp prob_av prob_hs inferred_direction prob1 prob2
 ```
-The `inferred_class` column is the numeric label for `inferred_type`. For the `inferred_direction` column, 0 means sample1 is genetically older than sample2 and 1 means sample1 is genetically younger than sample2.
+The `inferred_class` column is the numeric label for `inferred_type`. Here 1 is for GP, 2 is for AV, and 3 is for HS. For the `inferred_direction` column, 0 means sample1 is genetically older than sample2 and 1 means sample1 is genetically younger than sample2.
 
 ### 4. Run `CREST_sex_inference.py`
 
