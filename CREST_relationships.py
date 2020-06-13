@@ -123,8 +123,9 @@ def train_KDE_model(start, end, inv, features, labels, model_file, bandwidths):
 def prediction_KDE(features, start, end, inv, class_models, direction_model,prior):
 
     total_num = features.shape[0]
-    results = np.empty([total_num, 9], dtype=object)
+    results = np.empty([total_num, 10], dtype=object)
     results[:,0:2] = features[:,0:2]
+    dict_type = {0:'UN',1:'GP',2:'AV',3:'HS'}
     
     for i in range(total_num):
         if ~np.isnan(float(features[i,2])) and float(features[i,2]) >= start:
@@ -144,21 +145,26 @@ def prediction_KDE(features, start, end, inv, class_models, direction_model,prio
             
 
             results[i,2] = int(y_pred[0])
-            results[i,3:6] = (pred_prob[0] * prior)/ sum(pred_prob[0] * prior)
-            results[i,6] = int(direction_pred[0])
-            results[i,7:9] = pred_prob1[0]
+            results[i,3] = dict_type[results[i,2]]
+            results[i,4:7] = (pred_prob[0] * prior)/ sum(pred_prob[0] * prior)
+            results[i,7] = int(direction_pred[0])
+            results[i,8:10] = pred_prob1[0]
 
         else: 
             results[i,2] = 0
-            results[i,3:6] = prior[:]
-            results[i,6:9] = [0,0,0]
+            results[i,3] = dict_type[results[i,2]]
+            results[i,4:7] = prior[:]
+            results[i,7:10] = [0,0,0]
             
     return results
 
 
 def main(args):
-        
-    features = read_in_data(args.input,args.total_len)
+    path = os.path.dirname(__file__)+'/'
+
+    inputfile = path + args.input
+    features = read_in_data(inputfile,args.total_len)
+
     if abs(sum(args.prior)-1) >0.01:
         print("The sum of prior probability is not 1, will renormalize it. ")
     prior = np.asarray(args.prior)/sum(args.prior)
@@ -170,14 +176,14 @@ def main(args):
         test_model = train_KDE_model(args.start, args.end, args.inv, features, labels, args.models_type, bandwidths)
     else:
 
-        test_model = pickle.load(open(args.models_type, 'rb'))
+        test_model = pickle.load(open(path+args.models_type, 'rb'))
 
-    direction_model = pickle.load(open(args.models_direction, 'rb'))
+    direction_model = pickle.load(open(path+args.models_direction, 'rb'))
 
     results = prediction_KDE(features, args.start, args.end, args.inv, test_model, direction_model,prior)
-    output = args.output+'.csv'
+    output = path+args.output+'.csv'
     with open(output, 'wb') as f:
-        f.write(b'ID1,ID2,Type,Prob_GP, Prob_AV, Prob_HS, Direction, Prob1, Prob2\n')
+        f.write(b'ID1,ID2,Class,Type,Prob_GP,Prob_AV,Prob_HS,Direction,Prob1,Prob2\n')
         np.savetxt(f, results, delimiter=',',fmt='%s')
       
 
@@ -197,7 +203,7 @@ if __name__ == '__main__':
                         type=str, default = 'direction_clf.pickle',
                         help='File of trained models to predict directionality.')
     parser.add_argument('-o','--output',
-                        type=str, default = 'out',
+                        type=str, default = 'relationships',
                         help='File to output results.')
     parser.add_argument('--start',
                         type=float, default = 0.025,
@@ -217,9 +223,10 @@ if __name__ == '__main__':
     parser.add_argument('--labels',
                         type=str,
                         help='File of labels for trainning data.')
-    #
-    if os.path.exists("version.h"):
-        with open('version.h') as f:
+    
+    versionFile = os.path.dirname(__file__)+'/'+"version.h"
+    if os.path.exists(versionFile):
+        with open(versionFile) as f:
             for lines in f:
                 line = lines.split( )
                 if line[1] == "VERSION_NUMBER":
