@@ -160,10 +160,8 @@ def prediction_KDE(features, start, end, inv, class_models, direction_model,prio
 
 
 def main(args):
-    path = os.path.dirname(__file__)+'/'
-
-    inputfile = path + args.input
-    features = read_in_data(inputfile,args.total_len)
+    
+    features = read_in_data(args.input,args.total_len)
 
     if abs(sum(args.prior)-1) >0.01:
         print("The sum of prior probability is not 1, will renormalize it. ")
@@ -176,18 +174,20 @@ def main(args):
         test_model = train_KDE_model(args.start, args.end, args.inv, features, labels, args.models_type, bandwidths)
     else:
 
-        test_model = pickle.load(open(path+args.models_type, 'rb'))
+        test_model = pickle.load(open(args.models_type, 'rb'))
 
-    direction_model = pickle.load(open(path+args.models_direction, 'rb'))
+    direction_model = pickle.load(open(args.models_direction, 'rb'))
 
     results = prediction_KDE(features, args.start, args.end, args.inv, test_model, direction_model,prior)
-    output = path+args.output+'.csv'
+    output = args.output + '.csv'
     with open(output, 'wb') as f:
         f.write(b'ID1,ID2,Class,Type,Prob_GP,Prob_AV,Prob_HS,Direction,Prob1,Prob2\n')
         np.savetxt(f, results, delimiter=',',fmt='%s')
       
 
 if __name__ == '__main__':
+    path = os.path.dirname(__file__)+'/'
+
     parser = ArgumentParser('CREST_relationships.py')
     
     parser.add_argument('-i', '--input',
@@ -197,13 +197,13 @@ if __name__ == '__main__':
                         type=float, default = 3536.5466,
                         help='The total length of genome in cM.')
     parser.add_argument('--models_type',
-                        type=str, default = 'type_clf.pickle',
+                        type=str, default = path + 'type_clf.pickle',
                         help='File of trained models to predict relationship types.')
     parser.add_argument('--models_direction', 
-                        type=str, default = 'direction_clf.pickle',
+                        type=str, default = path + 'direction_clf.pickle',
                         help='File of trained models to predict directionality.')
     parser.add_argument('-o','--output',
-                        type=str, default = 'relationships',
+                        type=str, default = path + 'relationships',
                         help='File to output results.')
     parser.add_argument('--start',
                         type=float, default = 0.025,
@@ -224,7 +224,7 @@ if __name__ == '__main__':
                         type=str,
                         help='File of labels for trainning data.')
     
-    versionFile = os.path.dirname(__file__)+'/'+"version.h"
+    versionFile = path + "version.h"
     if os.path.exists(versionFile):
         with open(versionFile) as f:
             for lines in f:
