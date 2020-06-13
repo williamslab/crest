@@ -42,7 +42,7 @@ Details about other options are [below](#command-line-arguments-for-CREST_ratios
 
 
 ### 3. Run `CREST_relationships.py`
-
+`CREST_relationships.py` used Python 3.8 and requires python packages including sklearn 0.23, numpy. Please make sure you have them installed. Other versions may end up with warning or error messages.
 `CREST_relationships.py` takes in the .csv from `crest_ratio` as input. It also needs the total map length in cM to calculate the coverage rate. The basic usage is
 ```
 ./CREST_relationships.py -i [ratio output prefix].csv --total_len [total length of genome] -o [relationships output prefix]
@@ -56,9 +56,9 @@ Details about other options to `CREST_relationships.py` are [below](#command-lin
 
 `CREST_relationships.py` will generate [relationship output prefix].csv file with this format:
 ```
-ID1 ID2 inferred_type prob_gp prob_av prob_hs inferred_direction prob1 prob2
+ID1 ID2 inferred_class inferred_type prob_gp prob_av prob_hs inferred_direction prob1 prob2
 ```
-For the `inferred_type` column, 1 is for GP, 2 is for AV, and 3 is for HS. For the `inferred_direction` column, 0 means sample1 is genetically older than sample2 and 1 means sample1 is genetically younger than sample2.
+The `inferred_class` column is the numeric label for `inferred_type`. For the `inferred_direction` column, 0 means sample1 is genetically older than sample2 and 1 means sample1 is genetically younger than sample2.
 
 ### 4. Run `CREST_sex_inference.py`
 
@@ -87,11 +87,10 @@ The file redirection `<( ... )` syntax works in bash. Other shells can run `awk 
 
 ## Thorough Start
 ### Pre-CREST Data Generation and Curation
-The IBIS format .seg file contains the IBD segments for all samples and .coef file is a list of relative pairs with inferred relatedness. If you want to use IBD segments and relative information from other tools, please make sure to have the same data format. The useful information from .seg file includes ID1, ID2, chromosome, IBD type, genetic start position, genetic end position, genetic length in 1st, 2nd, 3rd, 6th, 7th, 8th, 9th columns correspondingly. The information ID1, ID2, IBD2_fraction, and degree_of_relatedness in 1st, 2nd, 4th, 6th columns of .coef file is used.  
+The IBIS format .seg file contains the IBD segments for all samples and .coef file is a list of relative pairs with inferred relatedness. If you want to use IBD segments and relative information from other tools, please make sure to have the same data format. The useful information from .seg file includes ID1, ID2, chromosome, IBD type, genetic start position, genetic end position, genetic length in 1st, 2nd, 3rd, 6th, 7th, 8th, 9th columns correspondingly. The information ID1, ID2, IBD2\_fraction, and degree\_of\_relatedness in 1st, 2nd, 4th, 6th columns of .coef file is used.  
 
 ### Relationship Type Inference
-CREST_relationships requires python packages including sklearn, numpy. Please make sure you have them installed.
-#### Command line arguments for CREST_ratios:
+#### Command line arguments for CREST\_ratios:
 CREST_ratios also have following options:
 * `--ibd2 <value between 0 and 1>` : the threshold of IBD2 ratios to exclude some relatives from second-degree relatives, since GP, AV, and HS are expected to share 0 ibd2 proportion. The default value is 0.02. 
 
@@ -99,7 +98,7 @@ CREST_ratios also have following options:
 
 * `--cluster_thresh <value>` : the threshold of genetic length in cM to cluster mutual relatives. If shared IBD length between mutual relatives is large than this threshold, then they will be considered as relatives to each other too. We will take the union of their IBD segments to calculate the ratios. The default value is 10. 
 
-#### Command line arguments for CREST_relationships:
+#### Command line arguments for CREST\_relationships:
 CREST_relationships have following options:
 * `-i` or `--input` : the .csv file contains the ratios information
 
@@ -121,7 +120,7 @@ CREST_relationships have following options:
 
 * `--train` : train new models with labeled data
 
-* `--labels` : the file containing labels for training dataset	
+* `--labels` : the file containing labels for training dataset. Here 1 is for GP, 2 is for AV, and 3 is for HS.	
 
 ### Parental Sex Inference
 #### Command line arguments:
