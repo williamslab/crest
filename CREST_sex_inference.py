@@ -611,19 +611,19 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser()
 
   # required
-  parser.add_argument('-i', '--input', dest = 'ifile', metavar = 'input_file_name', 
+  parser.add_argument('-i', '--input', dest = 'ifile', metavar = 'input .seg file name', 
     required = True, help = 'Name of the input file')
-  parser.add_argument('-o', '--output', dest = 'ofile', metavar = 'output_file_name', 
+  parser.add_argument('-o', '--output', dest = 'ofile', metavar = 'output file name', 
     required = True, help = 'Name of the output file')
-  parser.add_argument('-m', '--map', dest = 'mfile', metavar = 'map_file_name', 
+  parser.add_argument('-m', '--map', dest = 'mfile', metavar = '.simmap file name', 
     required = True, help = 'Name of the genetic map file (should be in .simmap format)')
-  parser.add_argument('-b', '--bim', dest = 'bfile', metavar = 'bim_file',
+  parser.add_argument('-b', '--bim', dest = 'bfile', metavar = 'bim file name',
      required = True, help = 'A PLINK .bim containing the dataset-specific map (should contain 22 autosomes)')
 
   # optional
-  parser.add_argument('-w', '--window', metavar = 'window_size', 
+  parser.add_argument('-w', '--window', metavar = 'window size in kilobases - optional', 
     type = int, default = 500, help = 'Window size in kilobases. Default: 500 kb')
-  parser.add_argument('-k', '--keep', dest = 'keepfile', metavar = 'keep_file_name', 
+  parser.add_argument('-k', '--keep', dest = 'keepfile', metavar = 'keep file name (list of pairs to keep) - optional', 
     default = None, help = 'Name of the file containing samples to keep. If not provided, all samples are kept.')
 
   args = parser.parse_args()
