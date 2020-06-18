@@ -3,16 +3,10 @@ import sys
 import os
 import numpy as np
 import csv
-import math 
-import random
-from sklearn.neighbors.kde import KernelDensity
+from sklearn.neighbors import KernelDensity
 from sklearn.model_selection import LeaveOneOut
 from sklearn.model_selection import GridSearchCV
-from scipy.stats import multivariate_normal
 import pickle
-from sklearn.model_selection import train_test_split 
-from sklearn.metrics import precision_recall_curve
-from yellowbrick.classifier import PrecisionRecallCurve
 from sklearn.base import BaseEstimator, ClassifierMixin
 from argparse import ArgumentParser
 
@@ -129,8 +123,9 @@ def train_KDE_model(start, end, inv, features, labels, model_file, bandwidths):
 def prediction_KDE(features, start, end, inv, class_models, direction_model,prior):
 
     total_num = features.shape[0]
-    results = np.empty([total_num, 9], dtype=object)
+    results = np.empty([total_num, 10], dtype=object)
     results[:,0:2] = features[:,0:2]
+    dict_type = {0:'UN',1:'GP',2:'AV',3:'HS'}
     
     for i in range(total_num):
         if ~np.isnan(float(features[i,2])) and float(features[i,2]) >= start:
@@ -150,34 +145,24 @@ def prediction_KDE(features, start, end, inv, class_models, direction_model,prio
             
 
             results[i,2] = int(y_pred[0])
-            results[i,3:6] = (pred_prob[0] * prior)/ sum(pred_prob[0] * prior)
-            results[i,6] = int(direction_pred[0])
-            results[i,7:9] = pred_prob1[0]
+            results[i,3] = dict_type[results[i,2]]
+            results[i,4:7] = (pred_prob[0] * prior)/ sum(pred_prob[0] * prior)
+            results[i,7] = int(direction_pred[0])
+            results[i,8:10] = pred_prob1[0]
 
         else: 
             results[i,2] = 0
-            results[i,3:6] = prior[:]
-            results[i,6:9] = [0,0,0]
+            results[i,3] = dict_type[results[i,2]]
+            results[i,4:7] = prior[:]
+            results[i,7:10] = [0,0,0]
             
     return results
 
 
 def main(args):
-    if args.version:
-        if os.path.exists("version.h"):
-            with open('version.h') as f:
-                for lines in f:
-                    line = lines.split( )
-                    if line[1] == "VERSION_NUMBER":
-                        version = line[2].replace('"','')
-                    if line[1] == "RELEASE_DATE":
-                        date = line[2].replace('"','') + ' ' + line[3] + ' ' + line[4].replace('"','')
-            f.close()
-            print("\nCREST  v" + version + "\n" + "(Released " + date +")\n\n")
-        else:
-            print("Please download printInfo.h file to get the version information.")
-        exit()
+    
     features = read_in_data(args.input,args.total_len)
+
     if abs(sum(args.prior)-1) >0.01:
         print("The sum of prior probability is not 1, will renormalize it. ")
     prior = np.asarray(args.prior)/sum(args.prior)
@@ -194,34 +179,31 @@ def main(args):
     direction_model = pickle.load(open(args.models_direction, 'rb'))
 
     results = prediction_KDE(features, args.start, args.end, args.inv, test_model, direction_model,prior)
-
-    with open(args.output, 'wb') as f:
-        f.write(b'ID1,ID2,Type,Prob_GP, Prob_AV, Prob_HS, Direction, Prob1, Prob2\n')
+    output = args.output + '.csv'
+    with open(output, 'wb') as f:
+        f.write(b'ID1,ID2,Class,Type,Prob_GP,Prob_AV,Prob_HS,Direction,Prob1,Prob2\n')
         np.savetxt(f, results, delimiter=',',fmt='%s')
       
 
 if __name__ == '__main__':
-    parser = ArgumentParser('CREST classifier to predict relationships')
-    # parser.add_argument('--fblock-path',
-    # type=bool,
-    # default=0,
-    #                    type=str,
-    #                    help='path for fblocka.')
+    path = os.path.dirname(__file__)+'/'
+
+    parser = ArgumentParser('CREST_relationships.py')
     
     parser.add_argument('-i', '--input',
-                        type=str, 
+                        type=str, required = True,
                         help='File with input data.')
     parser.add_argument('--total_len', 
                         type=float, default = 3536.5466,
                         help='The total length of genome in cM.')
     parser.add_argument('--models_type',
-                        type=str, default = 'type_clf.pickle',
+                        type=str, default = path + 'type_clf.pickle',
                         help='File of trained models to predict relationship types.')
     parser.add_argument('--models_direction', 
-                        type=str, default = 'direction_clf.pickle',
+                        type=str, default = path + 'direction_clf.pickle',
                         help='File of trained models to predict directionality.')
     parser.add_argument('-o','--output',
-                        type=str, default = 'out.csv',
+                        type=str, default = 'relationships',
                         help='File to output results.')
     parser.add_argument('--start',
                         type=float, default = 0.025,
@@ -241,9 +223,19 @@ if __name__ == '__main__':
     parser.add_argument('--labels',
                         type=str,
                         help='File of labels for trainning data.')
-    parser.add_argument('-v', '--version',
-                        action="store_true", 
-                        help='Print version and release date information.')
+    
+    versionFile = path + "version.h"
+    if os.path.exists(versionFile):
+        with open(versionFile) as f:
+            for lines in f:
+                line = lines.split( )
+                if line[1] == "VERSION_NUMBER":
+                    version = line[2].replace('"','')
+                if line[1] == "RELEASE_DATE":
+                    date = line[2].replace('"','') + ' ' + line[3] + ' ' + line[4].replace('"','')
+        print("\nCREST  v" + version + "\n" + "Released " + date +"\n\n")
+    else:
+        print("Please download version.h file to get the version information.")
 
     args = parser.parse_args()
     main(args)

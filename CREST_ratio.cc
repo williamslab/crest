@@ -31,9 +31,6 @@
 using namespace std;
 ///////////////////////////////////////////////////////
 
-//#define VERSION_NUMBER  "1.0.0"
-//#define RELEASE_DATE    "30 Apr 2020"
-
 class CmdLineOpts {
   public:
 
@@ -69,7 +66,7 @@ bool CmdLineOpts::parseCmdLineOptions(int argc, char **argv) {
   
     {"ibd2", required_argument, NULL, IBD},
     {"max_degree", required_argument, NULL, DEGREE},
-    {"cluster_thres", required_argument, NULL, CLS_THRES},
+    {"cluster_thresh", required_argument, NULL, CLS_THRES},
 
     {0, 0, 0, 0}
   };
@@ -140,7 +137,7 @@ bool CmdLineOpts::parseCmdLineOptions(int argc, char **argv) {
       case CLS_THRES:
     clusterThres = strtod(optarg, &endptr);
     if (errno != 0 || *endptr != '\0') {
-      fprintf(stderr, "ERROR: unable to parse --cluster_thres argument as floating point value\n");
+      fprintf(stderr, "ERROR: unable to parse --cluster_thresh argument as floating point value\n");
       if (errno != 0)
         perror("strtod");
       exit(2);
@@ -183,14 +180,14 @@ void CmdLineOpts::printUsage(FILE *out, char *programName) {
   fprintf(out, "%s [ARGUMENTS]\n", programName);
   fprintf(out, "\n");
   fprintf(out, "REQUIRED ARGUMENTS:\n");
-  fprintf(out, "  -i <filename>\t\tseg file including all ibdsegments among samples\n");
-  fprintf(out, "  -r <filename>\t\tcoef file containing a list of relatives within samples\n");
+  fprintf(out, "  -i <filename>\t\tIBIS format seg file including all ibd segments among samples\n");
+  fprintf(out, "  -r <filename>\t\tIBIS format coef file containing a list of relatives within samples\n");
   fprintf(out, "  -o <prefix>\t\toutput prefix (creates <prefix>.csv.)\n");
   
   fprintf(out, "OPTIONS:\n");
-  fprintf(out, "  --ibd2 <#>\tibd2 proportion to exclude some close relative types (default 0.02; 0 disables)\n");
-  fprintf(out, "  --cluster_thres <#>\tthreshold in cM to cluster relatives \n");
-  fprintf(out, "  --max_degree <#>\tupper bound of degree of relatedness to consider as mutual relatives \n");
+  fprintf(out, "  --ibd2 <#>\t\tminimum ibd2 proportion to exclude some close relative types (default 0.02; 0 disables)\n");
+  fprintf(out, "  --cluster_thresh <#>\t\tthreshold in cM to cluster relatives (See README for details)\n");
+  fprintf(out, "  --max_degree <#>\t\tupper bound of degree of relatedness to consider as mutual relatives \n");
   fprintf(out, "\n");
 }
 
@@ -275,14 +272,9 @@ struct secondPair {
     int num=0;
     double total=0;
     double max=0;
-    //vector<double> lenOfSeg;
-    //vector<double> numRel;
-    //vector<double> numCluster;
-    vector<double> coverage;
-    vector<double> overlapLen1;
-    vector<double> overlapLen2;
-    //vector<double> overlapt1;
-    //vector<double> overlapt2;
+    double coverage;
+    double overlapLen1;
+    double overlapLen2;
 
     bool operator==(const secondPair& other) { return id1 == other.id1 && id2 == other.id2; }
     
@@ -295,6 +287,13 @@ istream& operator>>(istream& is, pairRelated& pair)
     is >> pair.id1 >> pair.id2 >> pair.kinship >> pair.ibd2 >> pair.segCount >> pair.degree;
     return is;
 };
+//writing the output to a file
+ofstream & operator << (ofstream& ofs, secondPair &entry)
+{
+    ofs << entry.id1 << "," << entry.id2 <<  "," << entry.coverage << "," << entry.overlapLen1 << "," << entry.overlapLen2 << "\n";
+
+    return ofs;
+}
 /////////////////////////////////////////////////////////////////////////////////////////////
 // function intersection 
 dataBlock intersection( dataBlock x1y, dataBlock x2y ){
@@ -498,28 +497,7 @@ dataBlock combine(dataBlock xy, dataBlock tmp){
         return result;
     }
 };// end combine
-////////////////////////////////////////////////////////////////////////////////
 
-ofstream & operator <<(ofstream& ofs, vector<double>& vec)
-{
-    for (int i = 0; i < int(vec.size()); i++)
-    {
-        ofs << vec[i] << ' ';
-    }
-    return ofs;
-}
-
-//writing the output to a file
-ofstream & operator << (ofstream& ofs, secondPair &entry)
-{
-    ofs << entry.id1 << "," << entry.id2 <<  ",";
-    ofs << entry.coverage << ",";
-    ofs << entry.overlapLen1 << ",";
-    ofs << entry.overlapLen2 << "\n";
-    //ofs << entry.overlapt1 << ",";
-    //ofs << entry.overlapt2 << "\n";
-    return ofs;
-}
 /////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char** argv) {
     bool success = CmdLineOpts::parseCmdLineOptions(argc, argv);
@@ -846,16 +824,16 @@ int main(int argc, char** argv) {
         // to do: store the results to 
 
         
-        (*it).coverage.push_back(cov);
-        (*it).overlapLen1.push_back(n / d1); 
-        (*it).overlapLen2.push_back(n / d2); 
+        (*it).coverage = cov;
+        (*it).overlapLen1 = n / d1; 
+        (*it).overlapLen2 = n / d2; 
         //(*it).overlapt1.push_back(d1);
         //(*it).overlapt2.push_back(d2);
             
         }else{
-            (*it).coverage.push_back(0);
-            (*it).overlapLen1.push_back(0); 
-            (*it).overlapLen2.push_back(0); 
+            (*it).coverage = 0;
+            (*it).overlapLen1 = 0; 
+            (*it).overlapLen2 = 0; 
             //(*it).overlapt1.push_back(0);
             //(*it).overlapt2.push_back(0);
         }// end if relatives not empty
