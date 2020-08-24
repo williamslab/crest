@@ -54,6 +54,7 @@ class KDEClassifier(BaseEstimator, ClassifierMixin):
 def read_in_data(file, total_len):
     id1 = [ ]
     id2 = [ ]
+    is_pc = [ ]
     c = [ ]
     r1 = [ ]
     r2 = [ ]
@@ -62,9 +63,10 @@ def read_in_data(file, total_len):
             line = lines.split(',')
             id1.append(line[0])
             id2.append(line[1])
-            c.append(float(line[2]))
-            r1.append(float(line[3]))
-            r2.append(float(line[4]))
+            is_pc.append(int(line[2]))
+            c.append(float(line[3]))
+            r1.append(float(line[4]))
+            r2.append(float(line[5]))
 
 
 
@@ -74,16 +76,15 @@ def read_in_data(file, total_len):
     f2 = [max(r1[i],r2[i]) for i in range(len(c))]
     coverage = [c[i]/(total_len*2) for i in range(len(c))]
     d = [np.log(r1[i])-np.log(r2[i]) if r1[i]*r2[i]!=0 else 0 for i in range(len(c))]
-    features = np.column_stack((id1, id2, coverage, f1, f2, d))
+    features = np.column_stack((id1, id2,coverage, f1, f2, d, is_pc))
     
     return features
 
 def train_KDE_model(start, end, inv, features, labels, model_file, bandwidths):
     '''
-    use bins to store data 
-    for loop once
+    use bins to store data
     train model separately
-    store one or more trained models?  
+    store one or more trained models
     '''
     
     #total_len = 3346.299
@@ -93,10 +94,10 @@ def train_KDE_model(start, end, inv, features, labels, model_file, bandwidths):
     num_win = round((end - start)/inv)+1
     for index_win in range(num_win):
         if index_win < num_win - 1 :
-            index_bin = [i for i in range(total_num) if ~np.isnan(float(features[i,2])) and float(features[i,3]) != 0 and start + index_win * inv <= float(features[i,2]) <= start + (index_win + 1) * inv]
+            index_bin = [i for i in range(total_num) if ~np.isnan(float(features[i,2])) and int(features[i,6]) != 1 and float(features[i,3]) != 0 and start + index_win * inv <= float(features[i,2]) <= start + (index_win + 1) * inv]
               
         else:
-            index_bin = [i for i in range(total_num) if ~np.isnan(float(features[i,2])) and float(features[i,3])!=0 and float(features[i,2]) >= start + index_win * inv ]
+            index_bin = [i for i in range(total_num) if ~np.isnan(float(features[i,2])) and int(features[i,6]) != 1 and float(features[i,3])!=0 and float(features[i,2]) >= start + index_win * inv ]
 
 
        # print(len(index))
@@ -125,36 +126,40 @@ def prediction_KDE(features, start, end, inv, class_models, direction_model,prio
     total_num = features.shape[0]
     results = np.empty([total_num, 10], dtype=object)
     results[:,0:2] = features[:,0:2]
-    dict_type = {0:'UN',1:'GP',2:'AV',3:'HS'}
+    dict_type = {-1:'UN',0:'PC',1:'GP',2:'AV',3:'HS'}
     
     for i in range(total_num):
-        if ~np.isnan(float(features[i,2])) and float(features[i,2]) >= start:
-            coverage = float(features[i,2])
-            if coverage >= end:
-                model_index = int((end-start)/inv)
-            else:
-                model_index = int((coverage-start)/inv)
-            X_pred = features[i,3:5].astype(np.float).reshape(1,-1)
+        if ~np.isnan(float(features[i,2])) and float(features[i,2]) >= start and float(features[i,5])!=0:
+            #not PC but second degree
+            if int(features[i,6])!=1:
+                coverage = float(features[i,2])
+                if coverage >= end:
+                    model_index = int((end-start)/inv)
+                else:
+                    model_index = int((coverage-start)/inv)
+                X_pred = features[i,3:5].astype(np.float).reshape(1,-1)
         #X_pred[:,0] = np.divide(X_pred[:,0],X_pred[:,1])
-            y_pred = class_models[model_index].predict(X_pred)
-            pred_prob = class_models[model_index].predict_proba(X_pred)
+                y_pred = class_models[model_index].predict(X_pred)
+                pred_prob = class_models[model_index].predict_proba(X_pred)
+                results[i,2] = int(y_pred[0])
+                results[i,3] = dict_type[results[i,2]]
+                results[i,4:7] = (pred_prob[0] * prior)/ sum(pred_prob[0] * prior)
+            else:
+                results[i,2] = 0
+                results[i,3] = dict_type[results[i,2]]
+                results[i,4:7] = [0,0,0]
             
             direction_pred = direction_model.predict(features[i,5].reshape(1,-1))
             pred_prob1 = direction_model.predict_proba(features[i,5].reshape(1,-1))
-
             
-
-            results[i,2] = int(y_pred[0])
-            results[i,3] = dict_type[results[i,2]]
-            results[i,4:7] = (pred_prob[0] * prior)/ sum(pred_prob[0] * prior)
             results[i,7] = int(direction_pred[0])
             results[i,8:10] = pred_prob1[0]
 
         else: 
-            results[i,2] = 0
+            results[i,2] = -1
             results[i,3] = dict_type[results[i,2]]
             results[i,4:7] = prior[:]
-            results[i,7:10] = [0,0,0]
+            results[i,7:10] = [0,1/2,1/2]
             
     return results
 
