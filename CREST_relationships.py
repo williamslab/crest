@@ -159,7 +159,7 @@ def prediction_KDE(features, start, end, inv, class_models, direction_model,prio
             results[i,2] = -1
             results[i,3] = dict_type[results[i,2]]
             results[i,4:7] = prior[:]
-            results[i,7:10] = [0,1/2,1/2]
+            results[i,7:10] = [-1,1/2,1/2]
             
     return results
 
