@@ -36,7 +36,7 @@ Then run `crest_ratio` with the .seg and .coef files from IBIS as input.
 
 `crest_ratio` will generate [ratio output prefix].csv file with this format:
 ```
-ID1 ID2 coverage_in_cM ratio1 ratio2
+ID1 ID2 is_pc coverage_in_cM ratio1 ratio2
 ```
 Details about other options are [below](#command-line-arguments-for-CREST_ratios).
 
@@ -58,12 +58,12 @@ Details about other options to `CREST_relationships.py` are [below](#command-lin
 ```
 ID1 ID2 inferred_class inferred_type prob_gp prob_av prob_hs inferred_direction prob1 prob2
 ```
-The `inferred_class` column is the numeric label for `inferred_type`. Here 1 is for GP, 2 is for AV, and 3 is for HS. For the `inferred_direction` column, 0 means sample1 is genetically older than sample2 and 1 means sample1 is genetically younger than sample2.
+The `inferred_class` column is the numeric label for `inferred_type`. Here 0 is for PC, 1 is for GP, 2 is for AV, and 3 is for HS. For the `inferred_direction` column, 0 means sample1 is genetically older than sample2 and 1 means sample1 is genetically younger than sample2.
 
 ### 4. Run `CREST_sex_inference.py`
 
 For sex-inference, you will need to put sex-specific genetic maps into a .simmap format file.
-Information on how to do this can be found [here](https://github.com/williamslab/ped-sim#map-file); to use the [Bhérer et al. (2017)](http://dx.doi.org/10.1038/ncomms14994) genetic maps, run:
+Information on how to do this can be found [here](https://github.com/williamslab/ped-sim#map-file); to use the [BhÃ©rer et al. (2017)](http://dx.doi.org/10.1038/ncomms14994) genetic maps, run:
 
 ```bash
 wget https://github.com/cbherer/Bherer_etal_SexualDimorphismRecombination/raw/master/Refined_genetic_map_b37.tar.gz
@@ -96,7 +96,17 @@ CREST_ratios also have following options:
 
 * `--max_degree <integer larger than 2>`: the upper bound of degree of relatedness for mutual relatives to the pair. The default value is 6. 
 
-* `--cluster_thresh <value>` : the threshold of genetic length in cM to cluster mutual relatives. If shared IBD length between mutual relatives is large than this threshold, then they will be considered as relatives to each other too. We will take the union of their IBD segments to calculate the ratios. The default value is 10. 
+* `--pc`: to predict the directionality of PC. 
+ 
+* `--ibd0 <value between 0 and 1>` : the threshold of IBD0 ratios to distinguish PC. The default value is 0.1.
+
+* `--kinship_lw <value between 0 and 1>` : the lower bound of kinship to choose second degree pairs. The default value is 0.0883883.
+
+* `--kinship_up <value between 0 and 1>` : the upper bound of kinship to choose second degree pairs. The default value is 0.1767767. 
+
+* `--kinship_rel_lw <value between 0 and 1>` : the lower bound of kinship to choose mutual relatives. The default value is 0.0055243, corresponding to the lower bound of sixth degree relatives. 
+
+* `--kinship_rel_up <value between 0 and 1>` : the upper bound of kinship to choose mutual relatives. The default value is 0.0883883, corresponding to the upper bound of third degree relatives. 
 
 #### Command line arguments for CREST\_relationships:
 CREST_relationships have following options:
