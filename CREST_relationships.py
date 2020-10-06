@@ -75,7 +75,7 @@ def read_in_data(file, total_len):
     f1 = [min(r1[i],r2[i]) for i in range(len(c))]
     f2 = [max(r1[i],r2[i]) for i in range(len(c))]
     coverage = [c[i]/(total_len*2) for i in range(len(c))]
-    d = [np.log(r1[i])-np.log(r2[i]) if r1[i]*r2[i]!=0 else 0 for i in range(len(c))]
+    d = [np.log(r2[i])-np.log(r1[i]) if r1[i]*r2[i]!=0 else 0 for i in range(len(c))]
     features = np.column_stack((id1, id2,coverage, f1, f2, d, is_pc))
     
     return features
