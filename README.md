@@ -83,7 +83,7 @@ The above will compute LOD scores for _all_ pairs. To limit to only second degre
 ```
 ./CREST_sex_inference.py -i [your IBIS output].seg -m [your map].simmap -b [your (new) data].bim -o [sex inference output] -k <(awk '$6 == 2' [your IBIS output].coef)
 ```
-The file redirection `<( ... )` syntax works in bash. Other shells can run `awk '$6 == 2' [your IBIS output].coef > second_degree.coef`, and then run `CREST_sex_inference.py` with `-k second_degree.coef`.
+The file redirection `<( ... )` syntax works in bash. Other shells can run `awk '$6 == 2' [your IBIS output].coef > second_degree.coef`, and then run `CREST_sex_inference.py` with `-k second_degree.coef`. If you have already performed relationship inference, you can also use the [relationship output prefix].csv as a keep file, though you may want to extract only the GP or HS pairs first. 
 
 ## Thorough Start
 ### Pre-CREST Data Generation and Curation
@@ -136,6 +136,7 @@ CREST_relationships have following options:
 #### Command line arguments:
 
 * `-i` or `--input`: name of the input file (required)
+    * Input should be in IBIS format, where rows correspond to segments and columns (separated by whitespace) are: 'id1', 'id2', 'chromosome', 'start (bp)', 'stop (bp)'
 
 * `-o` or `--output`: name of the output file (required)
 
@@ -147,7 +148,8 @@ CREST_relationships have following options:
     * Windows are symmetric about the IBD segment ends, so a 500 kb window extends 250 kb in both directions.
 
 * `-k` or `--keep`: list of sample pairs to keep for sex-inference analysis (optional, defaults to `None`)
-
+    * The fields of this file may be separated by whitespace or commas, as long as the first two columns correspond to: 'id1', 'id2'
+'
 
 #### Output file format
 The format of the output file is
