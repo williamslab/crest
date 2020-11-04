@@ -876,9 +876,9 @@ int main(int argc, char** argv) {
                 rel.ibd_x1 = x1y;
                 rel.ibd_x2 = x2y;
                
-                if (max(x1y.total, x2y.total)/ min(x1y.total, x2y.total) <= 8){
+              //  if (max(x1y.total, x2y.total)/ min(x1y.total, x2y.total) <= 8){
                     relativeVec.push_back(rel);
-                }
+             //   }
             }
             sort (relativeVec.begin(), relativeVec.end(), sortByCoverage);
             //take the union of relatives
