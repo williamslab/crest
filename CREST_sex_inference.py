@@ -37,7 +37,8 @@ def read_input(file_name, keep = None):
     k = {}
     with open(keep) as kfile:
       for line in kfile:
-        lk = reorder_pairs(line.strip().split()[:2])
+        # replace columns with spaces so that CREST output or .coef files can be used
+        lk = reorder_pairs(line.replace(',', ' ').strip().split()[:2])
         k[tuple(lk)] = True
 
   # Read in the segment file
