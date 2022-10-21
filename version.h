@@ -1,2 +1,2 @@
-#define VERSION_NUMBER  "1.2.1"
-#define RELEASE_DATE    "23 Aug 2020"
+#define VERSION_NUMBER  "1.2.2"
+#define RELEASE_DATE    "20 Oct 2022"
