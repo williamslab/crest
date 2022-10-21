@@ -955,13 +955,35 @@ int main(int argc, char** argv) {
         double n = tmp_intersect.total;
         double d1 = 0;
         double d2 = 0;
-        
+
+    // have a vector for all segment
+    // have a matrix to record overlapping
+
+    dataBlock x1_all_hap1;
+    dataBlock x1_all_hap2;
+    dataBlock x1_tmp;
+
+    dataBlock x2_all_hap1;
+    dataBlock x2_all_hap2;
+    dataBlock x2_tmp;
+
+
     for (vector<hap>::iterator it3 = haplotypes.begin(); it3 !=haplotypes.end(); ++it3){
-          
-            d1 += (*it3).ibd_union1.total;
-            d2 += (*it3).ibd_union2.total;
+            x1_tmp = intersection(x1_all_hap1, (*it3).ibd_union1);
+            
+            x1_all_hap1 = combine(x1_all_hap1, (*it3).ibd_union1);
+
+            x1_all_hap2 = combine(x1_tmp, x1_all_hap2);
+
+            x2_tmp = intersection(x2_all_hap1, (*it3).ibd_union2);
+            
+            x2_all_hap1 = combine(x2_all_hap1, (*it3).ibd_union2);
+
+            x2_all_hap2 = combine(x2_tmp, x2_all_hap2);
                
        } //end for loop of haplotypes
+        d1 = x1_all_hap1.total + x1_all_hap2.total;
+        d2 = x2_all_hap1.total + x2_all_hap2.total;
         (*it).coverage = max(d1,d2);
         (*it).ratio1 = n / d1;
         (*it).ratio2 = n / d2;
